@@ -55,9 +55,10 @@ async def on_ready():
 
 @slash.slash(name='join', guild_ids=guild_ids)
 async def join_voice_channel(ctx: SlashContext):
-    channel = ctx.author.voice
+    channel: VoiceClient = ctx.author.voice
     if channel:
         await channel.channel.connect()
+        await ctx.send(f'Joined {channel.channel.name}')
     else:
         await ctx.send('You are not in a voice channel')
 
@@ -100,6 +101,9 @@ async def leave_voice_channel(ctx: SlashContext):
     if channel:
         if voice:
             await voice.disconnect()
+            await ctx.send('Disconnected')
+        else:
+            await ctx.send('You are not in a voice channel')
     else:
         await ctx.send('You are not in a voice channel')
 
@@ -111,6 +115,8 @@ async def pause_song(ctx: SlashContext):
         if voice.is_playing():
             voice.pause()
             await ctx.send('Song paused')
+        else:
+            await ctx.send('Song is not playing')
     else:
         await ctx.send('You are not in a voice channel')
 
@@ -122,6 +128,8 @@ async def resume_song(ctx: SlashContext):
         if voice.is_paused():
             voice.resume()
             await ctx.send('Song resumed')
+        else:
+            await ctx.send('Song is not paused')
     else:
         await ctx.send('You are not in a voice channel')
 
@@ -133,6 +141,8 @@ async def stop_song(ctx: SlashContext):
         if voice.is_playing():
             voice.stop()
             await ctx.send('Song stopped')
+        else:
+            await ctx.send('Song is not playing')
     else:
         await ctx.send('You are not in a voice channel')
 

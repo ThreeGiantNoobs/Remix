@@ -1,14 +1,14 @@
 import os
-import re
 import json
 
 import discord
 import dotenv
-import requests
-import youtube_dl
+import asyncio
 from discord import VoiceChannel, VoiceClient
 from discord.ext.commands import Bot
 from discord_slash import SlashCommand, SlashContext
+
+from dataFunc import *
 
 dotenv.load_dotenv()
 
@@ -16,37 +16,36 @@ with open('config.json') as config_file:
     config = json.load(config_file)
 
 guild_ids = config['SERVERS']
-YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True}
-yt_link_pat = re.compile(r'(?:https?://)?(?:www\.)?youtu(?:be)?\.(?:com|be)(?:/watch/?\?v=|/embed/|/shorts/|/)(\w+)')
-spotify_pattern = re.compile(r'(?:https?://)?(?:www\.)?open\.spotify\.com/track/(\w+)')
 
 queue = {}
 
 
-def search(query):
-    query = get_url(query)
-    with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
-        response = ydl.extract_info(f"ytsearch: {query}", download=False)['entries'][0]
-        video_url, video = response['url'], response['webpage_url']
-    return video_url, video
+class Arbitrary:
+    def __init__(self, voice: VoiceClient, channel):
+        self.voice = voice
+        self.channel = channel
+    
+    def callback(self, *args):
+        print(queue)
+        if queue.get(self.voice.guild.id):
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(run_queue(self))
+        else:
+            self.voice.stop()
 
 
-def get_spotify_title(spotify_track_id):
-    spotify_url = f'https://open.spotify.com/track/{spotify_track_id}'
-    response = requests.get(spotify_url)
-    title = re.search(r'<title>(.*?)</title>', response.text).group(1).replace('| Spotify', '').strip()
-    return title
-
-
-def get_url(url):
-    match = re.match(yt_link_pat, url)
-    spotify_match = re.match(spotify_pattern, url)
-    if match:
-        return match[1]
-    elif spotify_match:
-        return get_spotify_title(spotify_match[1])
-    else:
-        return url
+async def run_queue(arbitary: Arbitrary):
+    voice = arbitary.voice
+    channel = arbitary.channel
+    
+    if queue.get(voice.guild.id):
+        query = queue[voice.guild.id].pop(0)
+        url, video_link = search(query)
+        
+        voice.play(discord.FFmpegPCMAudio(url), after=arbitary.callback)
+        voice.source = discord.PCMVolumeTransformer(voice.source)
+        voice.source.volume = 0.5
+        await channel.send(f'Now Playing: {video_link}')
 
 
 bot = Bot(command_prefix='!')
@@ -82,14 +81,11 @@ async def play_song(ctx: SlashContext, song: str):
         await ctx.defer()
         if not voice.is_playing():
             if not queue.get(ctx.guild.id):
-                url, video_link = search(query)
-                # ydl = Popen(['youtube-dl', '-f', 'bestaudio', '-g', url], stdout=PIPE, stderr=PIPE)
-                voice.play(discord.FFmpegPCMAudio(url))
-                voice.source = discord.PCMVolumeTransformer(voice.source)
-                voice.source.volume = 0.5
-                await ctx.send(f'Playing song\n{video_link}')
+                await ctx.reply(f'Playing song', hidden=True)
+                queue[ctx.guild.id] = [query]
+                await run_queue(Arbitrary(voice, ctx.channel))
         else:
-            if not queue.get(f'{ctx.guild.id}'):
+            if not queue.get(ctx.guild.id):
                 queue[ctx.guild.id] = [query]
             else:
                 queue[ctx.guild.id].append(query)
@@ -146,6 +142,20 @@ async def stop_song(ctx: SlashContext):
         if voice.is_playing():
             voice.stop()
             await ctx.send('Song stopped')
+        else:
+            await ctx.send('Song is not playing')
+    else:
+        await ctx.send('You are not in a voice channel')
+
+
+@slash.slash(name='skip', guild_ids=guild_ids)
+async def skip_song(ctx: SlashContext):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice:
+        if voice.is_playing():
+            voice.stop()
+            await ctx.send('Song skipped')
+            await run_queue(Arbitrary(voice, ctx.channel))
         else:
             await ctx.send('Song is not playing')
     else:

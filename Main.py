@@ -1,16 +1,19 @@
-import discord
-from discord.ext.commands import Bot
-from discord import VoiceChannel, VoiceClient
-from discord_slash import SlashCommand, SlashContext
-import dotenv
 import os
-import youtube_dl
 import re
+
+import discord
+import dotenv
+import requests
+import youtube_dl
+from discord import VoiceChannel, VoiceClient
+from discord.ext.commands import Bot
+from discord_slash import SlashCommand, SlashContext
 
 dotenv.load_dotenv()
 guild_ids = [765583273854107658, 582073099588206602, 815786691394535425]
 YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True}
 yt_link_pat = re.compile(r'(?:https?://)?(?:www\.)?youtu(?:be)?\.(?:com|be)(?:/watch/?\?v=|/embed/|/shorts/|/)(\w+)')
+spotify_pattern = re.compile(r'(?:https?://)?(?:www\.)?open\.spotify\.com/track/(\w+)')
 
 queue = {}
 
@@ -23,10 +26,20 @@ def search(query):
     return video_url, video
 
 
+def get_spotify_title(spotify_track_id):
+    spotify_url = f'https://open.spotify.com/track/{spotify_track_id}'
+    response = requests.get(spotify_url)
+    title = re.search(r'<title>(.*?)</title>', response.text).group(1)
+    return title
+
+
 def get_url(url):
     match = re.match(yt_link_pat, url)
+    spotify_match = re.match(spotify_pattern, url)
     if match:
         return match[1]
+    elif spotify_match:
+        return get_spotify_title(spotify_match[1])
     else:
         return url
 
@@ -49,7 +62,8 @@ async def join_voice_channel(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='play', guild_ids=guild_ids, options=[{"name": "song", "description": "Song Name or Link", "required": "true", "type": 3}])
+@slash.slash(name='play', guild_ids=guild_ids,
+             options=[{"name": "song", "description": "Song Name or Link", "required": "true", "type": 3}])
 async def play_song(ctx: SlashContext, song: str):
     query = song
     channel: VoiceClient = ctx.author.voice

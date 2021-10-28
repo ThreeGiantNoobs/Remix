@@ -34,7 +34,7 @@ def search(query):
 def get_spotify_title(spotify_track_id):
     spotify_url = f'https://open.spotify.com/track/{spotify_track_id}'
     response = requests.get(spotify_url)
-    title = re.search(r'<title>(.*?)</title>', response.text).group(1)
+    title = re.search(r'<title>(.*?)</title>', response.text).group(1).replace('| Spotify', '').strip()
     return title
 
 

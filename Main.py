@@ -1,5 +1,6 @@
 import os
 import re
+import json
 
 import discord
 import dotenv
@@ -10,7 +11,11 @@ from discord.ext.commands import Bot
 from discord_slash import SlashCommand, SlashContext
 
 dotenv.load_dotenv()
-guild_ids = [765583273854107658, 582073099588206602, 815786691394535425]
+
+with open('config.json') as config_file:
+    config = json.load(config_file)
+
+guild_ids = config['SERVERS']
 YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True}
 yt_link_pat = re.compile(r'(?:https?://)?(?:www\.)?youtu(?:be)?\.(?:com|be)(?:/watch/?\?v=|/embed/|/shorts/|/)(\w+)')
 spotify_pattern = re.compile(r'(?:https?://)?(?:www\.)?open\.spotify\.com/track/(\w+)')

@@ -1,5 +1,6 @@
 import discord
 from discord.ext.commands import Bot
+from discord import VoiceChannel, VoiceClient
 from discord_slash import SlashCommand, SlashContext
 import dotenv
 import os
@@ -7,7 +8,7 @@ import youtube_dl
 import re
 
 dotenv.load_dotenv()
-guild_ids = [765583273854107658, 582073099588206602]
+guild_ids = [765583273854107658, 582073099588206602, 815786691394535425]
 YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True}
 yt_link_pat = re.compile(r'(?:https?://)?(?:www\.)?youtu(?:be)?\.(?:com|be)(?:/watch/?\?v=|/embed/|/shorts/|/)(\w+)')
 
@@ -51,10 +52,10 @@ async def join_voice_channel(ctx: SlashContext):
 @slash.slash(name='play', guild_ids=guild_ids, options=[{"name": "song", "description": "Song Name or Link", "required": "true", "type": 3}])
 async def play_song(ctx: SlashContext, song: str):
     query = song
-    channel = ctx.author.voice
-    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    channel: VoiceClient = ctx.author.voice
+    voice: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if channel:
-        channel = channel.channel
+        channel: VoiceChannel = channel.channel
         if not voice:
             await channel.connect()
         voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
@@ -68,10 +69,10 @@ async def play_song(ctx: SlashContext, song: str):
                 voice.source.volume = 0.5
                 await ctx.send(f'Playing song\n{video_link}')
         else:
-            if not queue[f'{ctx.channel.id}']:
-                queue[f'{ctx.guild.id}'] = [query]
+            if not queue.get(f'{ctx.guild.id}'):
+                queue[ctx.guild.id] = [query]
             else:
-                queue[f'{ctx.guild.id}'].append(query)
+                queue[ctx.guild.id].append(query)
             video = search(query)[1]
             await ctx.send(f'Song added to queue \n{video}')
     else:

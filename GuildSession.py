@@ -35,6 +35,7 @@ class GuildSession:
             if self._stop:
                 self.current_song = None
                 self._stop = False
+                return 
 
             if self.voice_client.is_paused() and not force:
                 self.voice_client.resume()

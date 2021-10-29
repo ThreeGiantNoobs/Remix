@@ -50,7 +50,6 @@ async def play_song(ctx: SlashContext, song: str):
             await channel.connect()
         voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         session = sessionManager.get_or_create_session(ctx.guild.id, voice, ctx.channel_id, [])
-        await ctx.defer()
         session.add_to_queue(query, ctx)
         session.start_playing()
     else:

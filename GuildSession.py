@@ -1,3 +1,4 @@
+import asyncio
 from typing import List
 
 import discord.ext.commands
@@ -5,7 +6,7 @@ from discord import VoiceClient
 from discord_slash import SlashContext
 
 from dataFunc import search
-from utils import start_playing_song
+from utils import start_playing_song, run_async
 
 
 class GuildSession:
@@ -20,17 +21,23 @@ class GuildSession:
 
     def add_to_queue(self, song: str, ctx: SlashContext):
         self._queue.append(song)
-        video = search(song)[1]
-        ctx.reply(f"Added {video} to the queue")
+        if len(self._queue) > 1:
+            video = search(song)[1]
+            run_async(ctx.reply(f"Added {video} to queue"), client=self.bot)
 
-    def start_playing(self, force=False):
+    def start_playing(self, force=False, stop=False):
         if not self.voice_client.is_playing():
             if self.voice_client.is_paused() and not force:
                 self.voice_client.resume()
                 return True
-            self.current_song = self._queue.pop(0)
+            # if stop:
+            #     self.voice_client.cleanup()
+            self.current_song = self._queue.pop(0) if self._queue else None
+            if not self.current_song:
+                run_async(self.bot.get_channel(self.channel_id).send(f"Queue: Empty"), self.bot)
+                return False
             url, video_link = start_playing_song(self.current_song, self.voice_client, self.callback)
-            self.bot.get_channel(self.channel_id).send(f"Now playing: {video_link}")
+            run_async(self.bot.get_channel(self.channel_id).send(f"Now playing: {video_link}"), self.bot)
             return True
         return False
 

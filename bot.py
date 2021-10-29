@@ -101,7 +101,8 @@ async def stop_song(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
         if voice.is_playing():
-            voice.stop()
+            session = sessionManager.get_or_create_session(ctx.guild.id, voice, ctx.channel_id, [])
+            session.stop()
             await ctx.send('Song stopped')
         else:
             await ctx.send('Song is not playing')

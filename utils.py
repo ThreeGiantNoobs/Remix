@@ -28,7 +28,7 @@ def start_playing_song(query: str, voice_client: discord.VoiceClient, callback) 
 #     loop.close()
 
 
-def run_async(coroutine, client):
+def run_async(coroutine, client: discord.ext.commands.Bot):
     future = asyncio.run_coroutine_threadsafe(coroutine, client.loop)
     try:
         print(future.done())

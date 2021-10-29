@@ -1,7 +1,7 @@
 import re
 
-import youtube_dl
 import requests
+import youtube_dl
 
 YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True}
 yt_link_pat = re.compile(r'(?:https?://)?(?:www\.)?youtu(?:be)?\.(?:com|be)(?:/watch/?\?v=|/embed/|/shorts/|/)(\w+)')
@@ -14,6 +14,13 @@ def search(query):
         response = ydl.extract_info(f"ytsearch: {query}", download=False)['entries'][0]
         video_url, video = response['url'], response['webpage_url']
     return video_url, video
+
+
+def get_title(query):
+    query = get_url(query)
+    with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+        response = ydl.extract_info(f"ytsearch: {query}", download=False)['entries'][0]
+        return response['title']
 
 
 def get_spotify_title(spotify_track_id):

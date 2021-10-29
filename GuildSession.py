@@ -5,7 +5,7 @@ import discord.ext.commands
 from discord import VoiceClient
 from discord_slash import SlashContext
 
-from dataFunc import search
+from dataFunc import search, get_title
 from utils import start_playing_song, run_async
 
 
@@ -18,15 +18,24 @@ class GuildSession:
         self._queue = queue
         self.current_song = None
         self.bot = bot
+        self._stop = False
 
     def add_to_queue(self, song: str, ctx: SlashContext):
         self._queue.append(song)
-        video = search(song)[1]
+        title = get_title(song)
         if len(self._queue) != 0 or self.current_song:
-            run_async(ctx.reply(f"Added {video} to queue"), client=self.bot)
+            run_async(ctx.reply(f"Added {title} to queue"), client=self.bot)
 
-    def start_playing(self, force=False, stop=False):
+    def stop(self):
+        self._stop = True
+        self.voice_client.stop()
+
+    def start_playing(self, force=False):
         if not self.voice_client.is_playing():
+            if self._stop:
+                self.current_song = None
+                self._stop = False
+
             if self.voice_client.is_paused() and not force:
                 self.voice_client.resume()
                 return True
@@ -44,7 +53,7 @@ class GuildSession:
     def skip_song(self, ctx: SlashContext):
         self.voice_client.stop()
         self.start_playing(force=True)
-        ctx.reply("Song skipped")
+        run_async(ctx.reply("Song skipped"), self.bot)
 
     def callback(self, error, *args):
         if error:

@@ -34,7 +34,7 @@ def get_url(url):
     match = re.match(yt_link_pat, url)
     spotify_match = re.match(spotify_pattern, url)
     if match:
-        return match[1]
+        return f'"{match[1]}"'
     elif spotify_match:
         return get_spotify_title(spotify_match[1])
     else:

@@ -22,7 +22,8 @@ class GuildSession:
     def add_to_queue(self, song: str, ctx: SlashContext):
         self._queue.append(song)
         video = search(song)[1]
-        run_async(ctx.reply(f"Added {video} to queue"), client=self.bot)
+        if len(self._queue) != 0 or self.current_song:
+            run_async(ctx.reply(f"Added {video} to queue"), client=self.bot)
 
     def start_playing(self, force=False, stop=False):
         if not self.voice_client.is_playing():
@@ -47,6 +48,7 @@ class GuildSession:
 
     def callback(self, error, *args):
         if error:
+            print(error, "please help me")
             self.bot.get_channel(self.channel_id).send(f"Error: {error}")
         else:
             self.start_playing()

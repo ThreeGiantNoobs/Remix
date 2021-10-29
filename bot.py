@@ -39,10 +39,8 @@ async def join_voice_channel(ctx: SlashContext):
 
 
 @slash.slash(name='play', guild_ids=guild_ids,
-             options=[{"name": "song", "description": "Song Name or Link", "type": 3}])
-async def play_song(ctx: SlashContext, song: str = None, *args):
-    if not song and args[0]:
-        song = args[0]
+             options=[{"name": "song", "description": "Song Name or Link", "required": True, "type": 3, "default": True}])
+async def play_song(ctx: SlashContext, song: str = None):
 
     voice_client: VoiceClient = ctx.author.voice
     voice: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
@@ -92,13 +90,20 @@ async def pause_song(ctx: SlashContext):
 
 @slash.slash(name='resume', guild_ids=guild_ids)
 async def resume_song(ctx: SlashContext):
-    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    voice: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
         if voice.is_paused():
             voice.resume()
             await ctx.send('Song resumed')
+        elif voice.is_playing():
+            await ctx.send('Song is already playing')
         else:
-            await ctx.send('Song is not paused')
+            session = sessionManager.get_or_create_session(ctx.guild.id, voice, ctx.channel_id, [])
+            if session.queue_empty():
+                await ctx.reply('No song in queue')
+            else:
+                session.start_playing()
+                ctx.
     else:
         await ctx.send('You are not in a voice channel')
 

@@ -55,7 +55,7 @@ class GuildSession:
             self.current_song = self._queue.pop(0)[0] if self._queue else None
             if not self.current_song:
                 # run_async(self.bot.get_channel(self.channel_id).send(f"Queue: Empty"), self.bot)
-                run_async(self.voice_client.stop(), self.bot)
+                self.voice_client.stop()
                 return False
             url, video_link = start_playing_song(self.current_song, self.voice_client, self.callback)
             run_async(self.bot.get_channel(self.channel_id).send(f"Now playing: {video_link}"), self.bot)

@@ -40,7 +40,10 @@ async def join_voice_channel(ctx: SlashContext):
 
 @slash.slash(name='play', guild_ids=guild_ids,
              options=[{"name": "song", "description": "Song Name or Link", "type": 3}])
-async def play_song(ctx: SlashContext, song: str = None):
+async def play_song(ctx: SlashContext, song: str = None, *args):
+    if not song and args[0]:
+        song = args[0]
+
     voice_client: VoiceClient = ctx.author.voice
     voice: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice_client:

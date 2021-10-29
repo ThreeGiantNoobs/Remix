@@ -10,7 +10,7 @@ from utils import start_playing_song
 
 class GuildSession:
     def __init__(self, guild_id: int, voice_client: discord.VoiceClient, channel_id: int, bot: discord.ext.commands.Bot,
-                 queue: list[str]):
+                 queue: List[str]):
         self.guild_id = guild_id
         self.voice_client: VoiceClient = voice_client
         self.channel_id = channel_id
@@ -62,7 +62,7 @@ class GuildSessionManager:
     def get_session(self, guild_id) -> GuildSession:
         return self.sessions[guild_id]
 
-    def get_or_create_session(self, guild_id, voice_client, channel_id, queue: list[str]) -> GuildSession:
+    def get_or_create_session(self, guild_id, voice_client, channel_id, queue: List[str]) -> GuildSession:
         if guild_id in self.sessions:
             return self.sessions[guild_id]
         else:

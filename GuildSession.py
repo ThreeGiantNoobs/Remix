@@ -1,3 +1,5 @@
+from typing import List
+
 import discord.ext.commands
 from discord import VoiceClient
 from discord_slash import SlashContext
@@ -49,7 +51,7 @@ class GuildSessionManager:
         self.sessions = {}
         self._bot = bot
 
-    def create_session(self, guild_id, voice_client, channel_id, queue: list[str], overwrite=False):
+    def create_session(self, guild_id, voice_client, channel_id, queue: List[str], overwrite=False):
         if guild_id in self.sessions and not overwrite:
             self.sessions[guild_id].voice_client = voice_client
             self.sessions[guild_id].channel_id = channel_id

@@ -21,9 +21,8 @@ class GuildSession:
 
     def add_to_queue(self, song: str, ctx: SlashContext):
         self._queue.append(song)
-        if len(self._queue) > 1:
-            video = search(song)[1]
-            run_async(ctx.reply(f"Added {video} to queue"), client=self.bot)
+        video = search(song)[1]
+        run_async(ctx.reply(f"Added {video} to queue"), client=self.bot)
 
     def start_playing(self, force=False, stop=False):
         if not self.voice_client.is_playing():

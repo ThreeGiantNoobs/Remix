@@ -39,8 +39,8 @@ async def join_voice_channel(ctx: SlashContext):
 
 
 @slash.slash(name='play', guild_ids=guild_ids,
-             options=[{"name": "song", "description": "Song Name or Link", "required": "true", "type": 3}])
-async def play_song(ctx: SlashContext, song: str):
+             options=[{"name": "song", "description": "Song Name or Link", "type": 3}])
+async def play_song(ctx: SlashContext, song: str = None):
     query = song
     voice_client: VoiceClient = ctx.author.voice
     voice: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
@@ -48,10 +48,14 @@ async def play_song(ctx: SlashContext, song: str):
         channel: VoiceChannel = voice_client.channel
         if not voice:
             await channel.connect()
+
         voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         session = sessionManager.get_or_create_session(ctx.guild.id, voice, ctx.channel_id, [])
-        session.add_to_queue(query, ctx)
-        session.start_playing()
+        if session.queue_empty() and not song:
+            await ctx.reply('No song specified')
+        else:
+            session.add_to_queue(query, ctx)
+            session.start_playing()
     else:
         await ctx.send('You are not in a voice channel')
 

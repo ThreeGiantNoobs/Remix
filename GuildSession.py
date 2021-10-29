@@ -20,6 +20,9 @@ class GuildSession:
         self.bot = bot
         self._stop = False
 
+    def queue_empty(self):
+        return len(self._queue) == 0
+
     def add_to_queue(self, song: str, ctx: SlashContext):
         self._queue.append(song)
         title = get_title(song)
@@ -35,7 +38,7 @@ class GuildSession:
             if self._stop:
                 self.current_song = None
                 self._stop = False
-                return 
+                return
 
             if self.voice_client.is_paused() and not force:
                 self.voice_client.resume()

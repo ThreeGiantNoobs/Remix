@@ -24,13 +24,17 @@ class GuildSession:
         return len(self._queue) == 0
     
     def add_to_queue(self, song: str, ctx: SlashContext):
-        title = get_title(song)
-        if len(self._queue) == 0 and not self.current_song:
-            run_async(ctx.reply(f"Playing {title}", delete_after=1), client=self.bot)
-            self._queue.append((song, title))
-        else:
-            self._queue.append((song, title))
-            run_async(ctx.reply(f"Added {title} to queue"), client=self.bot)
+        try:
+            title = get_title(song)
+            if len(self._queue) == 0 and not self.current_song:
+                run_async(ctx.reply(f"Playing {title}", delete_after=1), client=self.bot)
+                self._queue.append((song, title))
+            else:
+                self._queue.append((song, title))
+                run_async(ctx.reply(f"Added {title} to queue"), client=self.bot)
+        except IndexError as e:
+            print(e)
+            run_async(ctx.reply(f"No Results Found"), client=self.bot)
     
     def stop(self):
         self._stop = True

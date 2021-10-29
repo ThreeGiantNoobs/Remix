@@ -18,6 +18,7 @@ def start_playing_song(query: str, voice_client: discord.VoiceClient, callback) 
     except Exception as e:
         print(e)
         traceback.print_exc()
+        return None, None
 
 
 # def async_callback(fun, *args):

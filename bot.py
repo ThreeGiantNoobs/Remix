@@ -42,7 +42,6 @@ async def join_voice_channel(ctx: SlashContext):
 @slash.slash(name='play', guild_ids=guild_ids,
              options=[{"name": "song", "description": "Song Name or Link", "required": True, "type": 3}])
 async def play_song(ctx: SlashContext, song: str = None):
-
     voice_client: VoiceClient = ctx.author.voice
     voice: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice_client:
@@ -50,7 +49,7 @@ async def play_song(ctx: SlashContext, song: str = None):
         if not voice:
             await channel.connect()
         voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
-        session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
         if session.queue_empty() and not song:
             await ctx.reply('No song specified')
         else:
@@ -128,7 +127,7 @@ async def skip_song(ctx: SlashContext):
         session.skip_song(ctx)
     else:
         await ctx.send('You are not in a voice channel')
-        
+
 
 @slash.slash(name='queue', guild_ids=guild_ids)
 async def queue_list(ctx: SlashContext):
@@ -136,7 +135,7 @@ async def queue_list(ctx: SlashContext):
     if voice:
         _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
         titles = session.get_titles()
-        formatted_titles = "\n".join([f'{i+1}. {titles[i]}' for i in range(len(titles))])
+        formatted_titles = "\n".join([f'{i + 1}. {titles[i]}' for i in range(len(titles))])
         await ctx.reply(f'```{formatted_titles}```')
     else:
         await ctx.send('You are not in a voice channel')
@@ -159,6 +158,16 @@ async def previous_song(ctx: SlashContext):
     if voice:
         _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
         session.previous_song(ctx)
+    else:
+        await ctx.send('You are not in a voice channel')
+
+
+@slash.slash(name='restart', guild_ids=guild_ids)
+async def restart_song(ctx: SlashContext):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice:
+        _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        session.restart_song(ctx)
     else:
         await ctx.send('You are not in a voice channel')
 

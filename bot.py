@@ -15,8 +15,9 @@ with open('config.json') as config_file:
     config = json.load(config_file)
 
 guild_ids = config['SERVERS']
+PREFIX = config['PREFIX']
 
-bot = Bot(command_prefix='!')
+bot = Bot(command_prefix=PREFIX)
 slash = SlashCommand(bot, sync_commands=True)
 
 sessionManager = GuildSessionManager(bot)

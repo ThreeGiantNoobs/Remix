@@ -144,4 +144,25 @@ async def queue_list(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
+@slash.slash(name='clear', guild_ids=guild_ids)
+async def clear_queue(ctx: SlashContext):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice:
+        session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        session.clear_queue()
+        await ctx.reply('Queue cleared')
+    else:
+        await ctx.send('You are not in a voice channel')
+
+
+@slash.slash(name='previous', guild_ids=guild_ids)
+async def previous_song(ctx: SlashContext):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice:
+        session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        session.previous_song(ctx)
+    else:
+        await ctx.send('You are not in a voice channel')
+
+
 bot.run(os.getenv('TOKEN'))

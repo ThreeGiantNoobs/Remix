@@ -57,15 +57,15 @@ class GuildSession:
             if self.voice_client.is_paused() and not force:
                 self.voice_client.resume()
                 return True
-            # if stop:
-            #     self.voice_client.cleanup()
+
             self._next_song()
             if not self._current_song:
-                # run_async(self.bot.get_channel(self.channel_id).send(f"Queue: Empty"), self.bot)
                 self.voice_client.stop()
                 return False
+
             url, video_link = start_playing_song(self._current_song.get('title'), self.voice_client, self.callback)
             run_async(self.bot.get_channel(self.channel_id).send(f"Now playing: {video_link}"), self.bot)
+
             return True
         return False
 
@@ -108,6 +108,15 @@ class GuildSession:
             run_async(ctx.reply("Previous song played", delete_after=1), self.bot)
         else:
             run_async(ctx.reply("No previous song"), self.bot)
+
+    def restart_song(self, ctx: SlashContext):
+        if self._current_song:
+            self._queue.insert(0, self._current_song)
+            self._current_song = self._prev_song
+            self.start_playing()
+            run_async(ctx.reply("Restarted song", delete_after=1), self.bot)
+        else:
+            run_async(ctx.reply("No song playing"), self.bot)
 
 
 class GuildSessionManager:

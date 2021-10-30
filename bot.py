@@ -161,4 +161,14 @@ async def previous_song(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
+@slash.slash(name='restart', guild_ids=guild_ids)
+async def restart_song(ctx: SlashContext):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice:
+        _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        session.restart_song(ctx)
+    else:
+        await ctx.send('You are not in a voice channel')
+
+
 bot.run(os.getenv('TOKEN'))

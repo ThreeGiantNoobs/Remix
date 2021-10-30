@@ -1,18 +1,18 @@
 import asyncio
-import threading
 import traceback
 
-import discord
+from discord import VoiceClient, FFmpegPCMAudio, PCMVolumeTransformer
+from discord.ext.commands import Bot
 
 from dataFunc import search
 
 
-def start_playing_song(query: str, voice_client: discord.VoiceClient, callback) -> (str, str):
+def start_playing_song(query: str, voice_client: VoiceClient, callback) -> (str, str):
     try:
         url, video_link = search(query)
 
-        voice_client.play(discord.FFmpegPCMAudio(url), after=callback)
-        voice_client.source = discord.PCMVolumeTransformer(voice_client.source)
+        voice_client.play(FFmpegPCMAudio(url), after=callback)
+        voice_client.source = PCMVolumeTransformer(voice_client.source)
         voice_client.source.volume = 0.5
         return url, video_link
     except Exception as e:
@@ -28,7 +28,7 @@ def start_playing_song(query: str, voice_client: discord.VoiceClient, callback) 
 #     loop.close()
 
 
-def run_async(coroutine, client: discord.ext.commands.Bot):
+def run_async(coroutine, client: Bot):
     future = asyncio.run_coroutine_threadsafe(coroutine, client.loop)
     try:
         print(future.done())

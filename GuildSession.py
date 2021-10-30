@@ -4,7 +4,7 @@ import discord.ext.commands
 from discord import VoiceClient
 from discord_slash import SlashContext
 
-from dataFunc import search, get_title
+from dataFunc import get_title
 from utils import start_playing_song, run_async
 
 
@@ -14,7 +14,7 @@ class GuildSession:
         self.guild_id = guild_id
         self.voice_client: VoiceClient = voice_client
         self.channel_id = channel_id
-        self._queue = queue if queue else []
+        self._queue = queue
         self.current_song = None
         self.bot = bot
         self._stop = False
@@ -52,7 +52,7 @@ class GuildSession:
                 return True
             # if stop:
             #     self.voice_client.cleanup()
-            self._next_song()
+            self.current_song = self._queue.pop(0)[0] if self._queue else None
             if not self.current_song:
                 # run_async(self.bot.get_channel(self.channel_id).send(f"Queue: Empty"), self.bot)
                 self.voice_client.stop()
@@ -84,23 +84,6 @@ class GuildSession:
     
     def get_titles(self):
         return [x[1] for x in self._queue]
-    
-    def clear_queue(self):
-        self._queue = []
-    
-    def previous_song(self, ctx: SlashContext):
-        if self._prev_song:
-            self._queue.insert(0, self._prev_song)
-            self._prev_song = None
-            
-            if self.voice_client.is_playing():
-                self.voice_client.stop()
-            else:
-                self.start_playing()
-            
-            run_async(ctx.reply("Previous song played", delete_after=1), self.bot)
-        else:
-            run_async(ctx.reply("No previous song"), self.bot)
 
 
 class GuildSessionManager:

@@ -49,7 +49,7 @@ async def play_song(ctx: SlashContext, song: str = None):
         if not voice:
             await channel.connect()
         voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
-        session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
         if session.queue_empty() and not song:
             await ctx.reply('No song specified')
         else:
@@ -63,14 +63,11 @@ async def play_song(ctx: SlashContext, song: str = None):
 
 @slash.slash(name='leave', guild_ids=guild_ids)
 async def leave_voice_channel(ctx: SlashContext):
-    channel = ctx.author.voice
-    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
-    if channel:
-        if voice:
-            await voice.disconnect()
-            await ctx.send('Disconnected')
-        else:
-            await ctx.send('You are not in a voice channel')
+    voice_client: VoiceClient = ctx.author.voice
+    if voice_client:
+        await voice_client.disconnect()
+        sessionManager.remove_session(ctx.guild.id)
+        await ctx.send('Left voice channel')
     else:
         await ctx.send('You are not in a voice channel')
 
@@ -98,7 +95,7 @@ async def resume_song(ctx: SlashContext):
         elif voice.is_playing():
             await ctx.send('Song is already playing')
         else:
-            session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+            _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
             if session.queue_empty():
                 await ctx.reply('No song in queue')
             else:
@@ -113,7 +110,7 @@ async def stop_song(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
         if voice.is_playing():
-            session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+            _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
             session.stop()
             await ctx.send('Song stopped')
         else:
@@ -126,7 +123,7 @@ async def stop_song(ctx: SlashContext):
 async def skip_song(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
-        session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
         session.skip_song(ctx)
     else:
         await ctx.send('You are not in a voice channel')
@@ -136,7 +133,7 @@ async def skip_song(ctx: SlashContext):
 async def queue_list(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
-        session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
         titles = session.get_titles()
         formatted_titles = "\n".join([f'{i+1}. {titles[i]}' for i in range(len(titles))])
         await ctx.reply(f'```{formatted_titles}```')

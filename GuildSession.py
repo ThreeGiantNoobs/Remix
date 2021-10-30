@@ -16,10 +16,10 @@ class GuildSession:
         self.channel_id = channel_id
         self._queue = queue if queue else []
         self.current_song = None
+        self._prev_song = None
         self.bot = bot
         self._stop = False
-        self._prev_song = None
-    
+
     def queue_empty(self):
         return len(self._queue) == 0
     
@@ -91,7 +91,7 @@ class GuildSession:
     def previous_song(self, ctx: SlashContext):
         if self._prev_song:
             self._queue.insert(0, self._prev_song)
-            self._prev_song = None
+            self._prev_song = self.current_song
             
             if self.voice_client.is_playing():
                 self.voice_client.stop()

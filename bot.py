@@ -49,7 +49,7 @@ async def play_song(ctx: SlashContext, song: str = None):
         if not voice:
             await channel.connect()
         voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
-        session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
+        _, session = sessionManager.create_session(ctx.guild.id, voice, ctx.channel_id, [])
         if session.queue_empty() and not song:
             await ctx.reply('No song specified')
         else:

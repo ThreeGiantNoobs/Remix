@@ -4,7 +4,7 @@ import discord.ext.commands
 from discord import VoiceClient
 from discord_slash import SlashContext
 
-from dataFunc import search, get_title
+from dataFunc import get_title
 from utils import start_playing_song, run_async
 
 
@@ -108,23 +108,18 @@ class GuildSessionManager:
         self.sessions = {}
         self._bot = bot
     
-    def create_session(self, guild_id, voice_client, channel_id, queue: List[str], overwrite=False):
+    def create_session(self, guild_id, voice_client, channel_id, queue: List[Tuple[str, str]], overwrite=False) -> (
+            bool, GuildSession):
         if guild_id in self.sessions and not overwrite:
             self.sessions[guild_id].voice_client = voice_client
             self.sessions[guild_id].channel_id = channel_id
-            return False
-        self.sessions[guild_id] = GuildSession(guild_id, voice_client, channel_id, self._bot, queue)
-        return True
+            return False, self.sessions[guild_id]
+        session = self.sessions[guild_id] = GuildSession(guild_id, voice_client, channel_id, self._bot, queue)
+        return True, session
     
     def get_session(self, guild_id) -> GuildSession:
         return self.sessions[guild_id]
     
-    def get_or_create_session(self, guild_id, voice_client, channel_id, queue: List[str]) -> GuildSession:
-        if guild_id in self.sessions:
-            return self.sessions[guild_id]
-        else:
-            self.create_session(guild_id, voice_client, channel_id, queue)
-            return self.sessions[guild_id]
-    
     def remove_session(self, guild_id):
-        del self.sessions[guild_id]
+        if guild_id in self.sessions:
+            del self.sessions[guild_id]

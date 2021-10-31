@@ -3,7 +3,7 @@ import os
 
 import discord
 import dotenv
-from discord import VoiceChannel, VoiceClient
+from discord import VoiceChannel, VoiceClient, VoiceProtocol
 from discord.ext.commands import Bot
 from discord_slash import SlashCommand, SlashContext
 
@@ -63,13 +63,13 @@ async def play_song(ctx: SlashContext, song: str = None):
 
 @slash.slash(name='leave', guild_ids=guild_ids)
 async def leave_voice_channel(ctx: SlashContext):
-    voice_client: VoiceClient = ctx.author.voice
+    voice_client: VoiceProtocol = ctx.voice_client
     if voice_client:
-        await voice_client.channel.disconnect()
+        await voice_client.disconnect(force=True)
         sessionManager.remove_session(ctx.guild.id)
         await ctx.send('Left voice channel')
     else:
-        await ctx.send('You are not in a voice channel')
+        await ctx.send('I am not in a voice channel')
 
 
 @slash.slash(name='pause', guild_ids=guild_ids)

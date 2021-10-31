@@ -68,7 +68,7 @@ async def play_song(ctx: SlashContext, song: str = None):
 @slash.slash(name='leave', guild_ids=guild_ids,
              description="Leave the voice channel")
 async def leave_voice_channel(ctx: SlashContext):
-    voice_client: VoiceProtocol = ctx.voice_client
+    voice_client: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice_client:
         await voice_client.disconnect(force=True)
         sessionManager.remove_session(ctx.guild.id)

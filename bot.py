@@ -28,7 +28,8 @@ async def on_ready():
     await bot.get_channel(id=837582224361652237).send('Bot is online')
 
 
-@slash.slash(name='join', guild_ids=guild_ids)
+@slash.slash(name='join', guild_ids=guild_ids,
+             description="Join the voice channel you are in")
 async def join_voice_channel(ctx: SlashContext):
     voice_client: VoiceClient = ctx.author.voice
     if voice_client:
@@ -40,7 +41,10 @@ async def join_voice_channel(ctx: SlashContext):
 
 
 @slash.slash(name='play', guild_ids=guild_ids,
-             options=[{"name": "song", "description": "Song Name or Link", "required": True, "type": 3}])
+             options=[{"name": "song",
+                       "description": "Song Name or Link",
+                       "required": True, "type": 3}],
+             description="Play a song")
 async def play_song(ctx: SlashContext, song: str = None):
     voice_client: VoiceClient = ctx.author.voice
     voice: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
@@ -61,7 +65,8 @@ async def play_song(ctx: SlashContext, song: str = None):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='leave', guild_ids=guild_ids)
+@slash.slash(name='leave', guild_ids=guild_ids,
+             description="Leave the voice channel")
 async def leave_voice_channel(ctx: SlashContext):
     voice_client: VoiceProtocol = ctx.voice_client
     if voice_client:
@@ -72,7 +77,8 @@ async def leave_voice_channel(ctx: SlashContext):
         await ctx.send('I am not in a voice channel')
 
 
-@slash.slash(name='pause', guild_ids=guild_ids)
+@slash.slash(name='pause', guild_ids=guild_ids,
+             description="Pause the current song")
 async def pause_song(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
@@ -85,7 +91,8 @@ async def pause_song(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='resume', guild_ids=guild_ids)
+@slash.slash(name='resume', guild_ids=guild_ids,
+             description="Resume the current song")
 async def resume_song(ctx: SlashContext):
     voice: VoiceClient = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
@@ -105,7 +112,8 @@ async def resume_song(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='stop', guild_ids=guild_ids)
+@slash.slash(name='stop', guild_ids=guild_ids,
+             description="Stop the current song")
 async def stop_song(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
@@ -119,7 +127,8 @@ async def stop_song(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='skip', guild_ids=guild_ids)
+@slash.slash(name='skip', guild_ids=guild_ids,
+             description="Skip the current song")
 async def skip_song(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
@@ -129,7 +138,8 @@ async def skip_song(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='queue', guild_ids=guild_ids)
+@slash.slash(name='queue', guild_ids=guild_ids,
+             description="Show the current queue")
 async def queue_list(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
@@ -141,7 +151,8 @@ async def queue_list(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='clear', guild_ids=guild_ids)
+@slash.slash(name='clear', guild_ids=guild_ids,
+             description="Clear the current queue")
 async def clear_queue(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
@@ -152,7 +163,8 @@ async def clear_queue(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='previous', guild_ids=guild_ids)
+@slash.slash(name='previous', guild_ids=guild_ids,
+             description="Play the previous song")
 async def previous_song(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:
@@ -162,7 +174,8 @@ async def previous_song(ctx: SlashContext):
         await ctx.send('You are not in a voice channel')
 
 
-@slash.slash(name='restart', guild_ids=guild_ids)
+@slash.slash(name='restart', guild_ids=guild_ids,
+             description="Restart the current song")
 async def restart_song(ctx: SlashContext):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice:

@@ -65,7 +65,7 @@ async def play_song(ctx: SlashContext, song: str = None):
 async def leave_voice_channel(ctx: SlashContext):
     voice_client: VoiceClient = ctx.author.voice
     if voice_client:
-        await voice_client.disconnect()
+        await voice_client.channel.disconnect()
         sessionManager.remove_session(ctx.guild.id)
         await ctx.send('Left voice channel')
     else:

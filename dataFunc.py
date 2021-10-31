@@ -7,7 +7,8 @@ import dotenv
 
 dotenv.load_dotenv()
 
-YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True}
+YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True, 'cachedir': False, 'nocheckcertificate': True}
+
 yt_link_pat = re.compile(r'(?:https?://)?(?:www\.)?youtu(?:be)?\.(?:com|be)(?:/watch/?\?v=|/embed/|/shorts/|/)(\w+)')
 spotify_pattern = re.compile(r'(?:https?://)?(?:www\.)?open\.spotify\.com/track/(\w+)')
 spotify_playlist_pattern = re.compile(r'(?:https?://)?(?:www\.)?open\.spotify\.com/playlist/(\w+)')
@@ -47,13 +48,13 @@ def get_url(url):
     elif spotify_match:
         return get_spotify_title(spotify_match[1])
     elif spotify_playlist_match:
-        return get_tracks_from_spotify_playlist(spotify_playlist_match[1])
+        return "dQw4w9WgXcQ"
+        # return get_tracks_from_spotify_playlist(spotify_playlist_match[1])
     else:
         return url
     
 
 def get_tracks_from_spotify_playlist(spotify_playlist_id):
-    """Get all tracks from playlist using spotify api"""
     spotify_token = os.getenv('SPOTIFY_API_KEY')
     headers = {
         'Accept': 'application/json',

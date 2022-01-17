@@ -3,7 +3,7 @@ import os
 
 import discord
 import dotenv
-from discord import VoiceChannel, VoiceClient, VoiceProtocol
+from discord import VoiceChannel, VoiceClient
 from discord.ext.commands import Bot
 from discord_slash import SlashCommand, SlashContext
 

@@ -1,5 +1,15 @@
 {
   "SERVERS": [765583273854107658],
   "LOG_CHANNEL": 837582224361652237,
-  "PREFIX": "!"
+  "PREFIX": "!",
+
+  "SPOTIFY_CREDS": {
+    "CLIENT_ID": "df789f1bb2164d27b292be2519da0384",
+    "CLIENT_SECRET": "8b03107bda964ba59ac1e781b20eda53",
+    "REDIRECT_URI": "http://localhost:3000/callback",
+    "TOKEN_URL": "https://accounts.spotify.com/api/token",
+    "API_TOKEN": "BQDWYcEGRVsK--jAYVUCdDyvIvdTTsGA6a3qXEVr1Ai_F5d__Xga8GsPz58icxmlKjT7yDclmPCPK9tn0e4",
+    "API_BASE_URL": "https://api.spotify.com/v1",
+    "TOKEN_EXPIRE_TIME": 0
+  }
 }

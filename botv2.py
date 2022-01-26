@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 
 import discord
 import dotenv
@@ -49,7 +50,7 @@ async def join(ctx: SlashContext, force: bool = False):
         try:
             await ctx.reply(e.message)
         except AttributeError:
-            print(e)
+            traceback.print_exc()
 
 
 @slash.slash(name="leave", guild_ids=guild_ids,
@@ -65,11 +66,33 @@ async def leave(ctx: SlashContext):
         await player.leave_voice_channel(ctx)
         await ctx.reply(f"Left {voice.channel.name}")
     except Exception as e:
-        if e.__getattribute__("message"):
+        try:
             await ctx.reply(e.message)
-        else:
-            print(e)
-
+        except AttributeError:
+            traceback.print_exc()
+            
+            
+@slash.slash(name="play", guild_ids=guild_ids,
+             description="Plays a song from YouTube",
+             options=[{"name": "query",
+                       "description": "The query to search for",
+                       "required": False, "type": 1}])
+async def play(ctx: SlashContext, query: str):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+        
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+        
+        title, url = await player.play_song(ctx, query)
+        await ctx.reply(f"Now playing: {title}\n{url}")
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            print(traceback.print_exc())
+            
 
 if __name__ == '__main__':
     bot.run(os.getenv('DISCORD_TOKEN'))

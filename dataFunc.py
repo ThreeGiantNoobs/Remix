@@ -1,11 +1,14 @@
 import re
 import os
+import json
 
 import requests
 import youtube_dl
 import dotenv
 
 dotenv.load_dotenv()
+with open('config.json') as config_file:
+    config = json.load(config_file)
 
 YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True, 'cachedir': False, 'nocheckcertificate': True}
 
@@ -52,10 +55,10 @@ def get_url(url):
         # return get_tracks_from_spotify_playlist(spotify_playlist_match[1])
     else:
         return url
-    
+
 
 def get_tracks_from_spotify_playlist(spotify_playlist_id):
-    spotify_token = os.getenv('SPOTIFY_API_KEY')
+    spotify_token = config["SPOTIFY"]["API_TOKEN"]
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

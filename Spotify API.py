@@ -1,17 +1,25 @@
 import base64
-import os
 import requests
-from dotenv import load_dotenv
+import json
+import time
 
-load_dotenv()
-client_id = os.getenv("SPOTIFY_CLIENT_ID")
-client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+with open('config.json') as config:
+    config = json.load(config)
+spotify_config = config['SPOTIFY_CREDS']
+
+client_id = spotify_config["CLIENT_ID"]
+client_secret = spotify_config["CLIENT_SECRET"]
+token_url = spotify_config["TOKEN_URL"]
+api_token = spotify_config["API_TOKEN"]
+expire_time = spotify_config["TOKEN_EXPIRE_TIME"]
 
 
-def auth_spotify():
-    token_url = 'https://accounts.spotify.com/api/token'
-    id_secret = f'{client_id}:{client_secret}'
+def get_api_token():
+    global client_id, client_secret, token_url, api_token, expire_time
+    if time.time() < expire_time:
+        return api_token
     
+    id_secret = f'{client_id}:{client_secret}'
     encoded_id_secret = base64.b64encode(id_secret.encode('utf-8')).decode()
     
     payload = {'grant_type': 'client_credentials'}
@@ -20,9 +28,14 @@ def auth_spotify():
         'Content-Type': 'application/x-www-form-urlencoded'
     }
     response = requests.post(token_url, data=payload, headers=headers)
+    response_json = response.json()
+
+    api_token = response_json['access_token']
+    expire_time = time.time() + response_json['expires_in']
     
-    return response.json()
-
-
-if __name__ == '__main__':
-    print(auth_spotify())
+    spotify_config['API_TOKEN'] = api_token
+    spotify_config['TOKEN_EXPIRE_TIME'] = expire_time
+    with open('config.json', 'w') as config_file:
+        json.dump(config, config_file)
+        
+    return api_token

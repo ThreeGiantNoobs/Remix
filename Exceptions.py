@@ -29,3 +29,8 @@ class NotConnectedException(Exception):
             self.message = f"{bot} is not connected to any channel"
         else:
             self.message = f"{bot} is not connected to {channel}"
+            
+
+class SessionNotFoundException(Exception):
+    def __init__(self, channel):
+        self.message = f"Session does not exist for {channel}"

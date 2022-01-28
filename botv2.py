@@ -94,5 +94,10 @@ async def play(ctx: SlashContext, query: str):
             print(traceback.print_exc())
             
 
+@bot.event
+async def on_song_end(player, session):
+    if session.queue:
+        await player.play_song(session.queue[0])
+
 if __name__ == '__main__':
     bot.run(os.getenv('DISCORD_TOKEN'))

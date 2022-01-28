@@ -6,6 +6,7 @@ import discord
 from discord import VoiceClient, VoiceChannel, Guild, FFmpegPCMAudio
 from discord.ext.commands import Bot
 from discord_slash import SlashContext
+from tenacity import retry
 
 from Exceptions import *
 from SessionV2 import Session, SessionManager, Song
@@ -18,6 +19,27 @@ class Status(Enum):
     PLAYING = 1
     PAUSED = 2
     STOPPED = 3
+
+
+def update_player_wrapper(func):
+    if asyncio.iscoroutinefunction(func):
+        async def wrapper(*args, **kwargs):
+            try:
+                await func(*args, **kwargs)
+            finally:
+                args[0].voice_client = discord.utils.get(args[0].bot.voice_clients,
+                                                         guild=args[0].guild)
+                args[0].current_channel = args[0].voice_client.channel if args[0].voice_client else None
+    else:
+        def wrapper(*args, **kwargs):
+            try:
+                func(*args, **kwargs)
+            finally:
+                args[0].voice_client = discord.utils.get(args[0].bot.voice_clients,
+                                                         guild=args[0].guild)
+                args[0].current_channel = args[0].voice_client.channel if args[0].voice_client else None
+    
+    return wrapper
 
 
 class Player:
@@ -37,26 +59,6 @@ class Player:
             return Status.PAUSED
         else:
             return Status.STOPPED
-    
-    def update_player_wrapper(func):
-        if asyncio.iscoroutinefunction(func):
-            async def wrapper(*args, **kwargs):
-                try:
-                    await func(*args, **kwargs)
-                finally:
-                    args[0].voice_client = discord.utils.get(args[0].bot.voice_clients,
-                                                             guild=args[0].guild)
-                    args[0].current_channel = args[0].voice_client.channel if args[0].voice_client else None
-        else:
-            def wrapper(*args, **kwargs):
-                try:
-                    func(*args, **kwargs)
-                finally:
-                    args[0].voice_client = discord.utils.get(args[0].bot.voice_clients,
-                                                             guild=args[0].guild)
-                    args[0].current_channel = args[0].voice_client.channel if args[0].voice_client else None
-        
-        return wrapper
     
     def update_player(self):
         self.voice_client = discord.utils.get(self.bot.voice_clients,
@@ -107,12 +109,12 @@ class Player:
         
         if status == Status.STOPPED:
             song: Song = self.session.play_song(query)
-            self.run_song(song.dl_url)
+            await self.run_song(song.dl_url)
             return song.title, song.video_url
     
     @update_player_wrapper
     def run_song(self, url):
-        self.voice_client.play(FFmpegPCMAudio(url), after=self.session.callback)
+        self.voice_client.play(FFmpegPCMAudio(url), after=self.bot.dispatch('song_end', self, self.session))
         self.voice_client.source = discord.PCMVolumeTransformer(self.voice_client.source)
         self.voice_client.source.volume = 0.5
 

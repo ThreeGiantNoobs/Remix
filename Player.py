@@ -6,7 +6,7 @@ import discord
 from discord import VoiceClient, VoiceChannel, Guild, FFmpegPCMAudio
 from discord.ext.commands import Bot
 from discord_slash import SlashContext
-from tenacity import retry
+from tenacity import retry, stop_after_attempt
 
 from Exceptions import *
 from SessionV2 import Session, SessionManager, Song
@@ -112,6 +112,7 @@ class Player:
             await self.run_song(song.dl_url)
             return song.title, song.video_url
     
+    @retry(stop=stop_after_attempt(3))
     @update_player_wrapper
     def run_song(self, url):
         self.voice_client.play(FFmpegPCMAudio(url), after=self.bot.dispatch('song_end', self, self.session))

@@ -70,7 +70,7 @@ def get_song_spotify(query):
 
     response = requests.get(f'https://api.spotify.com/v1/search?', params=args, headers=headers)
     response_json = response.json()
-    print(response_json)
+
     song = response_json['tracks']['items'][0]
     song = Spotify_Song(
         name=song['name'],

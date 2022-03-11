@@ -6,6 +6,8 @@ import requests
 import youtube_dl
 import dotenv
 
+from spotify_api import get_song_spotify
+
 dotenv.load_dotenv()
 
 GENIUS_API_KEY = os.getenv("GENIUS_TOKEN")
@@ -38,7 +40,14 @@ def _check_query(query):
 def get_data(query):
     q_type, processed_query = _check_query(query)
     if q_type == "yt":
-        return {**_get_yt_data(processed_query), **{"query": query}}
+        return {**_get_yt_data(processed_query),
+                "query": query,
+                "explicit": False}
+    elif q_type == "text":
+        song = get_song_spotify(processed_query)
+        return {**_search_yt(f"{song['name']} {song['artists'][0]}"),
+                "query": query,
+                "explicit": song["explicit"]}
     
     
 def _get_yt_data(video_id):
@@ -50,7 +59,10 @@ def _get_yt_data(video_id):
         video_id = info_dict.get("id", None)
         video_title = info_dict.get('title', None)
     
-    return {"video_title": video_title, "video_id": video_id, "video_dl_url": video_url, "video_url": url}
+    return {"video_title": video_title,
+            "video_id": video_id,
+            "video_dl_url": video_url,
+            "video_url": url}
 
 
 def genius_lyrics(artist, song):
@@ -69,3 +81,21 @@ def textyl_lyrics(song, artist=None):
         return response.json()
     else:
         return None
+
+
+def _search_yt(query):
+    with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+        info_dict = ydl.extract_info(f"ytsearch: {query}", download=False)["entries"][0]
+        video_url = info_dict.get("url", None)
+        webpage_url = info_dict.get("webpage_url", None)
+        video_id = info_dict.get("id", None)
+        video_title = info_dict.get('title', None)
+
+    return {"video_title": video_title,
+            "video_id": video_id,
+            "video_dl_url": video_url,
+            "video_url": webpage_url}
+
+
+if __name__ == '__main__':
+    print(get_data("hello"))

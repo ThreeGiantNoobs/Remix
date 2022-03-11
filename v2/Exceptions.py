@@ -34,3 +34,18 @@ class NotConnectedException(Exception):
 class SessionNotFoundException(Exception):
     def __init__(self, channel):
         self.message = f"Session does not exist for {channel}"
+
+
+class NotPlayingException(Exception):
+    def __init__(self, bot):
+        self.message = f"{bot} is not playing anything"
+
+
+class NotPausedException(Exception):
+    def __init__(self, bot):
+        self.message = f"{bot} is not paused"
+
+
+class AlreadyStoppedException(Exception):
+    def __init__(self, bot):
+        self.message = f"{bot} is already stopped"

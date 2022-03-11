@@ -41,12 +41,14 @@ async def join(ctx: SlashContext, force: bool = False):
         voice: VoiceClient = ctx.author.voice
         if not voice:
             raise AuthorVoiceException(ctx.author.mention)
-        
+
+        await ctx.defer()
         player = player_manager.get_or_create_player(voice.channel.guild.id)
         
         await player.join_voice_channel(ctx, force)
         await ctx.reply(f"Joined {voice.channel.name}")
     except Exception as e:
+        traceback.print_exc()
         try:
             await ctx.reply(e.message)
         except AttributeError:
@@ -76,15 +78,16 @@ async def leave(ctx: SlashContext):
              description="Plays a song from YouTube",
              options=[{"name": "query",
                        "description": "The query to search for",
-                       "required": False, "type": 1}])
+                       "required": False, "type": 3}])
 async def play(ctx: SlashContext, query: str = None):
     try:
         voice: VoiceClient = ctx.author.voice
         if not voice:
             raise AuthorVoiceException(ctx.author.mention)
-        
+
         player = player_manager.get_or_create_player(voice.channel.guild.id)
-        
+
+        await ctx.defer()
         title, url, played = await player.play_song(ctx, query)
         if played:
             await ctx.reply(f"Now playing: {title}\n{url}")
@@ -94,12 +97,76 @@ async def play(ctx: SlashContext, query: str = None):
         try:
             await ctx.reply(e.message)
         except AttributeError:
-            print(traceback.print_exc())
-            
+            traceback.print_exc()
+
+
+@slash.slash(name="pause", guild_ids=guild_ids,
+             description="Pauses the current song")
+async def pause(ctx: SlashContext):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+
+        await ctx.defer()
+        await player.pause_song(ctx)
+        await ctx.reply("Paused")
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            traceback.print_exc()
+
+
+@slash.slash(name="resume", guild_ids=guild_ids,
+             description="Resumes the current song")
+async def resume(ctx: SlashContext):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+
+        await ctx.defer()
+        await player.resume_song(ctx)
+        await ctx.reply("Resumed")
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            traceback.print_exc()
+
+
+@slash.slash(name="skip", guild_ids=guild_ids,
+             description="Skips the current song")
+async def skip(ctx: SlashContext):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+
+        await ctx.defer()
+        await player.skip_song(ctx)
+        await ctx.reply("Skipped")
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            traceback.print_exc()
+
 
 @bot.event
-async def on_song_end(player, session):
-    ...
+async def on_song_end(player):
+    title, url, played = await player.play_song()
+    if played:
+        await player.text_channel.send(f"Now playing: {title}\n{url}")
+    else:
+        await player.text_channel.send(f"Queue has ended")
 
 if __name__ == '__main__':
     bot.run(os.getenv('DISCORD_TOKEN'))

@@ -116,4 +116,6 @@ dmypy.json
 .idea/
 .idea
 
-config.json
+v1/config.json
+v2/config.json
+testing.py

@@ -108,10 +108,9 @@ class Player:
             self.update_player()
         
         if status == Status.STOPPED:
-            song: Song = self.session.play_song(query)
-            await self.run_song(song.dl_url)
-            return song.title, song.video_url
-    
+            session: Session = session_manager.get_or_create_session(self)
+            song: Song = await session.get_song(query)
+
     @retry(stop=stop_after_attempt(3))
     @update_player_wrapper
     def run_song(self, url):

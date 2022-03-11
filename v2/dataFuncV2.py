@@ -1,17 +1,24 @@
 import re
 import os
 
+import lyricsgenius as lg
 import requests
 import youtube_dl
 import dotenv
 
 dotenv.load_dotenv()
 
+GENIUS_API_KEY = os.getenv("GENIUS_TOKEN")
 YDL_OPTIONS = {'format': 'bestaudio/best', 'noplaylist': True, 'cachedir': False, 'nocheckcertificate': True}
 
 yt_link_pat = re.compile(r'(?:https?://)?(?:www\.)?youtu(?:be)?\.(?:com|be)(?:/watch/?\?v=|/embed/|/shorts/|/)(\w+)')
 spotify_pattern = re.compile(r'(?:https?://)?(?:www\.)?open\.spotify\.com/track/(\w+)')
 spotify_playlist_pattern = re.compile(r'(?:https?://)?(?:www\.)?open\.spotify\.com/playlist/(\w+)')
+
+genius = lg.Genius(GENIUS_API_KEY,
+                   skip_non_songs=True,
+                   excluded_terms=["(Remix)", "(Live)"],
+                   remove_section_headers=True)
 
 
 def _check_query(query):
@@ -29,9 +36,9 @@ def _check_query(query):
     
 
 def get_data(query):
-    q_type, query = _check_query(query)
+    q_type, processed_query = _check_query(query)
     if q_type == "yt":
-        return _get_yt_data(query)
+        return {**_get_yt_data(processed_query), **{"query": query}}
     
     
 def _get_yt_data(video_id):
@@ -44,3 +51,21 @@ def _get_yt_data(video_id):
         video_title = info_dict.get('title', None)
     
     return {"video_title": video_title, "video_id": video_id, "video_dl_url": video_url, "video_url": url}
+
+
+def genius_lyrics(artist, song):
+    try:
+        song = genius.search_song(song, artist)
+        lyrics = song.lyrics
+        return lyrics
+    except:
+        return None
+
+
+def textyl_lyrics(song, artist=None):
+    BASE_URL = "https://api.textyl.co/api/lyrics"
+    response = requests.get(f"{BASE_URL}?q={song}{f' {artist}' if artist else ' '}")
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None

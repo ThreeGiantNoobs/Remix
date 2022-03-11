@@ -39,3 +39,20 @@ def get_api_token():
         json.dump(config, config_file)
         
     return api_token
+
+
+def get_song_name(query):
+    
+    api_token = get_api_token()
+    headers = {
+        'Authorization': f'Bearer {api_token}',
+        'Content-Type': 'application/json'
+    }
+    payload = {
+        'q': query,
+        'type': 'track',
+        'limit': 1
+    }
+    response = requests.get('https://api.spotify.com/v1/search', data=payload, headers=headers)
+    response_json = response.json()
+    return response_json['tracks']['items'][0]['name']

@@ -77,7 +77,7 @@ async def leave(ctx: SlashContext):
              options=[{"name": "query",
                        "description": "The query to search for",
                        "required": False, "type": 1}])
-async def play(ctx: SlashContext, query: str):
+async def play(ctx: SlashContext, query: str = None):
     try:
         voice: VoiceClient = ctx.author.voice
         if not voice:
@@ -85,8 +85,11 @@ async def play(ctx: SlashContext, query: str):
         
         player = player_manager.get_or_create_player(voice.channel.guild.id)
         
-        title, url = await player.play_song(ctx, query)
-        await ctx.reply(f"Now playing: {title}\n{url}")
+        title, url, played = await player.play_song(ctx, query)
+        if played:
+            await ctx.reply(f"Now playing: {title}\n{url}")
+        else:
+            await ctx.reply(f"Queued: {title} ")
     except Exception as e:
         try:
             await ctx.reply(e.message)
@@ -96,8 +99,7 @@ async def play(ctx: SlashContext, query: str):
 
 @bot.event
 async def on_song_end(player, session):
-    if session.queue:
-        await player.play_song(session.queue[0])
+    ...
 
 if __name__ == '__main__':
     bot.run(os.getenv('DISCORD_TOKEN'))

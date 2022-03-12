@@ -120,7 +120,8 @@ class Player:
                     raise AlreadyPlayingException(self.bot.user.name, self.current_channel.name)
                 if status == Status.PAUSED:
                     self.voice_client.resume()
-                    return None, None, True
+                    session: Session = session_manager.get_or_create_session(self)
+                    song = self.session.current_song
         else:
             self.update_player(ctx)
             channel: VoiceChannel = ctx.author.voice.channel

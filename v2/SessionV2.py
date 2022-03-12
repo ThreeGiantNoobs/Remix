@@ -18,14 +18,16 @@ class Song:
                  dl_url: str,
                  video_url: str,
                  thumbnail: str,
+                 artist: str,
                  explicit: bool):
         self.query = query
         self.title = title
         self.id = vid_id
         self.dl_url = dl_url
         self.video_url = video_url
-        self.explicit = explicit
         self.thumbnail = thumbnail
+        self.artist = artist
+        self.explicit = explicit
 
 
 class Session:
@@ -76,13 +78,14 @@ class Session:
 
     def _get_song(self, query: str):
         song = get_data(query)
-        song = Song(song['query'],
-                    song['video_title'],
-                    song['video_id'],
-                    song['video_dl_url'],
-                    song['video_url'],
-                    song['thumbnail_url'],
-                    song['explicit'])
+        song = Song(query=song['query'],
+                    title=song['video_title'],
+                    vid_id=song['video_id'],
+                    dl_url=song['video_dl_url'],
+                    video_url=song['video_url'],
+                    thumbnail=song['thumbnail_url'],
+                    artist=song['artist'],
+                    explicit=song['explicit'])
 
         return song
 

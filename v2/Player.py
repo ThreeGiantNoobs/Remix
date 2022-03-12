@@ -85,7 +85,7 @@ class Player:
                 self.voice_client.stop()
             await self.voice_client.move_to(channel)
             return True
-        return AlreadyConnectedException(self.bot.user.name, self.current_channel.mention)
+        raise AlreadyConnectedException(self.bot.user.name, self.current_channel.mention)
 
     @update_player_wrapper
     async def leave_voice_channel(self, ctx: SlashContext):
@@ -113,7 +113,7 @@ class Player:
                 song = session.current_song
 
                 if not song:
-                    return None, None, False
+                    return None, False
             else:
                 if status == Status.NOT_CONNECTED:
                     raise NotConnectedException(self.bot.user.name)
@@ -134,7 +134,7 @@ class Player:
             session: Session = session_manager.get_or_create_session(self)
             song: Song = session.queue_song(query)
 
-        return song.title, song.video_url, session.queue[0] == song
+        return song, session.queue[0] == song
 
     async def pause_song(self, ctx: SlashContext):
         status = self.status()

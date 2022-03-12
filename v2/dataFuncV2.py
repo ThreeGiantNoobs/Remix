@@ -28,12 +28,14 @@ def parse_video(yt_video):
     webpage_url = yt_video.get("webpage_url", None)
     video_id = yt_video.get("id", None)
     video_title = yt_video.get('title', None)
+    artist = yt_video.get('uploader', None)
     thumbnail_url = yt_video.get("thumbnails", None)[-1]["url"]
 
     return {"video_title": video_title,
             "video_id": video_id,
             "video_dl_url": video_url,
             "video_url": webpage_url,
+            "artist": artist,
             "thumbnail_url": thumbnail_url}
 
 

@@ -4,7 +4,7 @@ import traceback
 
 import discord
 import dotenv
-from discord import VoiceChannel, VoiceClient
+from discord import VoiceChannel, VoiceClient, Activity, ActivityType, Embed
 from discord.ext.commands import Bot
 from discord_slash import SlashCommand, SlashContext
 
@@ -20,7 +20,9 @@ guild_ids = config['SERVERS']
 log_channel = config['LOG_CHANNEL']
 PREFIX = config['PREFIX']
 
-bot = Bot(command_prefix=PREFIX)
+activity = Activity(type=ActivityType.playing, name="with my life")
+
+bot = Bot(command_prefix=PREFIX, help_command=None, activity=activity)
 slash = SlashCommand(bot, sync_commands=True)
 
 player_manager = PlayerManager(bot)
@@ -46,9 +48,10 @@ async def join(ctx: SlashContext, force: bool = False):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
         
         await player.join_voice_channel(ctx, force)
-        await ctx.reply(f"Joined {voice.channel.name}")
+
+        embed = Embed(description=f"Joined {voice.channel.mention}")
+        await ctx.reply(embed=embed)
     except Exception as e:
-        traceback.print_exc()
         try:
             await ctx.reply(e.message)
         except AttributeError:
@@ -66,7 +69,9 @@ async def leave(ctx: SlashContext):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
         
         await player.leave_voice_channel(ctx)
-        await ctx.reply(f"Left {voice.channel.name}")
+
+        embed = Embed(description=f"Left {voice.channel.mention}")
+        await ctx.reply(embed=embed)
     except Exception as e:
         try:
             await ctx.reply(e.message)
@@ -88,11 +93,15 @@ async def play(ctx: SlashContext, query: str = None):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
 
         await ctx.defer()
-        title, url, played = await player.play_song(ctx, query)
+        song, played = await player.play_song(ctx, query)
         if played:
-            await ctx.reply(f"Now playing: {title}\n{url}")
+            embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)
+            embed.set_author(name=player.session.current_song.artist)
+            embed.set_thumbnail(url=player.session.current_song.thumbnail)
+            await ctx.reply(embed=embed)
         else:
-            await ctx.reply(f"Queued: {title} ")
+            embed = Embed(description=f"Added {song.title} to queue")
+            await ctx.reply(embed=embed)
     except Exception as e:
         try:
             await ctx.reply(e.message)
@@ -112,7 +121,9 @@ async def pause(ctx: SlashContext):
 
         await ctx.defer()
         await player.pause_song(ctx)
-        await ctx.reply("Paused")
+
+        embed = Embed(description=f"Paused {player.session.current_song.title}")
+        await ctx.reply(embed=embed)
     except Exception as e:
         try:
             await ctx.reply(e.message)
@@ -132,7 +143,9 @@ async def resume(ctx: SlashContext):
 
         await ctx.defer()
         await player.resume_song(ctx)
-        await ctx.reply("Resumed")
+
+        embed = Embed(description=f"Resumed {player.session.current_song.title}")
+        await ctx.reply(embed=embed)
     except Exception as e:
         try:
             await ctx.reply(e.message)
@@ -152,7 +165,9 @@ async def skip(ctx: SlashContext):
 
         await ctx.defer()
         await player.skip_song(ctx)
-        await ctx.reply("Skipped")
+
+        embed = Embed(description=f"Skipped {player.session.current_song.title}")
+        await ctx.reply(embed=embed)
     except Exception as e:
         try:
             await ctx.reply(e.message)
@@ -162,11 +177,15 @@ async def skip(ctx: SlashContext):
 
 @bot.event
 async def on_song_end(player):
-    title, url, played = await player.play_song()
+    song, played = await player.play_song()
     if played:
-        await player.text_channel.send(f"Now playing: {title}\n{url}")
+        embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)
+        embed.set_author(name=player.session.current_song.artist)
+        embed.set_thumbnail(url=player.session.current_song.thumbnail)
+        await player.text_channel.send(embed=embed)
     else:
-        await player.text_channel.send(f"Queue has ended")
+        embed = Embed(description=f"Queue ended")
+        await player.text_channel.send(embed=embed)
 
 if __name__ == '__main__':
     bot.run(os.getenv('DISCORD_TOKEN'))

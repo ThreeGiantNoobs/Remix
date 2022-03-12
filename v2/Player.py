@@ -106,12 +106,21 @@ class Player:
         status = self.status()
 
         if not query:
-            session: Session = session_manager.get_or_create_session(self)
-            session.remove_latest()
-            song = session.current_song
+            if not ctx:
+                session: Session = session_manager.get_or_create_session(self)
+                session.remove_latest()
+                song = session.current_song
 
-            if not song:
-                return None, None, False
+                if not song:
+                    return None, None, False
+            else:
+                if status == Status.NOT_CONNECTED:
+                    raise NotConnectedException(self.bot.user.name)
+                if status == Status.PLAYING:
+                    raise AlreadyPlayingException(self.bot.user.name, self.current_channel.name)
+                if status == Status.PAUSED:
+                    self.voice_client.resume()
+                    return None, None, True
         else:
             self.update_player(ctx)
             channel: VoiceChannel = ctx.author.voice.channel

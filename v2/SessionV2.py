@@ -12,13 +12,20 @@ class Actions(Enum):
 
 
 class Song:
-    def __init__(self, query: str, title: str, vid_id: str, dl_url: str, video_url: str, explicit: bool):
+    def __init__(self, query: str,
+                 title: str,
+                 vid_id: str,
+                 dl_url: str,
+                 video_url: str,
+                 thumbnail: str,
+                 explicit: bool):
         self.query = query
         self.title = title
         self.id = vid_id
         self.dl_url = dl_url
         self.video_url = video_url
         self.explicit = explicit
+        self.thumbnail = thumbnail
 
 
 class Session:
@@ -74,6 +81,7 @@ class Session:
                     song['video_id'],
                     song['video_dl_url'],
                     song['video_url'],
+                    song['thumbnail_url'],
                     song['explicit'])
 
         return song

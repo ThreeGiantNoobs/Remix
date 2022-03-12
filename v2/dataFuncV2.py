@@ -23,6 +23,20 @@ genius = lg.Genius(GENIUS_API_KEY,
                    remove_section_headers=True)
 
 
+def parse_video(yt_video):
+    video_url = yt_video.get("url", None)
+    webpage_url = yt_video.get("webpage_url", None)
+    video_id = yt_video.get("id", None)
+    video_title = yt_video.get('title', None)
+    thumbnail_url = yt_video.get("thumbnails", None)[-1]["url"]
+
+    return {"video_title": video_title,
+            "video_id": video_id,
+            "video_dl_url": video_url,
+            "video_url": webpage_url,
+            "thumbnail_url": thumbnail_url}
+
+
 def _check_query(query):
     yt_match = re.match(yt_link_pat, query)
     spotify_match = re.match(spotify_pattern, query)
@@ -33,9 +47,9 @@ def _check_query(query):
         return "spotify", spotify_match.group(1)
     if spotify_playlist_match:
         return "spotify_playlist", spotify_playlist_match.group(1)
-    
+
     return "text", query
-    
+
 
 def get_data(query, run=False):
     q_type, processed_query = _check_query(query)
@@ -45,24 +59,20 @@ def get_data(query, run=False):
                 "explicit": False}
     elif q_type == "text":
         song = get_song_spotify(processed_query)
-        return {**_search_yt(f"{song['name']} {' '.join(song['artists'])} {'lyrics' if run else ''}"),
+        return {**_search_yt(f"{song['name']} \
+        {' '.join(song['artists'])} \
+        {'lyrics' if run else ''}"),
                 "query": query,
                 "explicit": song["explicit"]}
-    
-    
+
+
 def _get_yt_data(video_id):
     base_url = "https://www.youtube.com/watch?v="
     url = base_url + video_id
     with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
         info_dict = ydl.extract_info(url, download=False)
-        video_url = info_dict.get("url", None)
-        video_id = info_dict.get("id", None)
-        video_title = info_dict.get('title', None)
-    
-    return {"video_title": video_title,
-            "video_id": video_id,
-            "video_dl_url": video_url,
-            "video_url": url}
+
+    return parse_video(info_dict)
 
 
 def genius_lyrics(artist, song):
@@ -86,15 +96,8 @@ def textyl_lyrics(song, artist=None):
 def _search_yt(query):
     with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
         info_dict = ydl.extract_info(f"ytsearch: {query}", download=False)["entries"][0]
-        video_url = info_dict.get("url", None)
-        webpage_url = info_dict.get("webpage_url", None)
-        video_id = info_dict.get("id", None)
-        video_title = info_dict.get('title', None)
 
-    return {"video_title": video_title,
-            "video_id": video_id,
-            "video_dl_url": video_url,
-            "video_url": webpage_url}
+    return parse_video(info_dict)
 
 
 if __name__ == '__main__':

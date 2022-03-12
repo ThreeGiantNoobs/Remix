@@ -45,7 +45,7 @@ def get_data(query):
                 "explicit": False}
     elif q_type == "text":
         song = get_song_spotify(processed_query)
-        return {**_search_yt(f"{song['name']} {song['artists'][0]}"),
+        return {**_search_yt(f"{song['name']} {' '.join(song['artists'])} lyrics"),
                 "query": query,
                 "explicit": song["explicit"]}
     

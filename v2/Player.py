@@ -162,6 +162,7 @@ class Player:
         return True
 
     def end_song(self, *args):
+        print(args)
         self.bot.dispatch('song_end', self)
 
     @retry(stop=stop_after_attempt(3))

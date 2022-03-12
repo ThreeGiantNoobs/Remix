@@ -10,6 +10,7 @@ from tenacity import retry, stop_after_attempt
 
 from Exceptions import *
 from SessionV2 import Session, SessionManager, Song
+from dataFuncV2 import get_data
 
 session_manager: SessionManager = SessionManager()
 
@@ -177,8 +178,9 @@ class Player:
 
     @retry(stop=stop_after_attempt(3))
     @update_player_wrapper
-    def run_song(self, url):
-        self.voice_client.play(FFmpegPCMAudio(url), after=self.end_song)
+    def run_song(self, song: Song):
+        song = get_data(song.query, run=True)
+        self.voice_client.play(FFmpegPCMAudio(song['video_dl_url']), after=self.end_song)
         self.voice_client.source = discord.PCMVolumeTransformer(self.voice_client.source)
         self.voice_client.source.volume = 0.5
 

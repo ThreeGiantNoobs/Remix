@@ -31,7 +31,7 @@ class Session:
             elif self[0] != self.session.current_song:
                 if self.session.player.status() != 3:
                     self.session.player.stop_song()
-                    self.session.player.run_song(self[0].dl_url)
+                    self.session.player.run_song(self[0])
                     self.session.previous_song = self.session.current_song
                     self.session.current_song = self[0]
 

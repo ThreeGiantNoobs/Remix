@@ -37,7 +37,7 @@ def _check_query(query):
     return "text", query
     
 
-def get_data(query):
+def get_data(query, run=False):
     q_type, processed_query = _check_query(query)
     if q_type == "yt":
         return {**_get_yt_data(processed_query),
@@ -45,7 +45,7 @@ def get_data(query):
                 "explicit": False}
     elif q_type == "text":
         song = get_song_spotify(processed_query)
-        return {**_search_yt(f"{song['name']} {' '.join(song['artists'])} lyrics"),
+        return {**_search_yt(f"{song['name']} {' '.join(song['artists'])} {'lyrics' if run else ''}"),
                 "query": query,
                 "explicit": song["explicit"]}
     

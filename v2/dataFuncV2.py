@@ -1,11 +1,9 @@
-import re
-import os
-
+import dotenv
 import lyricsgenius as lg
+import os
+import re
 import requests
 import youtube_dl
-import dotenv
-
 from spotify_api import get_song_spotify
 
 dotenv.load_dotenv()
@@ -61,11 +59,19 @@ def get_data(query, run=False):
                 "explicit": False}
     elif q_type == "text":
         song = get_song_spotify(processed_query)
-        return {**_search_yt(f"{song['name']} \
+
+        processed_song = {**_search_yt(f"{song['name']} \
         {' '.join(song['artists'])} \
         {'lyrics' if run else ''}"),
-                "query": query,
-                "explicit": song["explicit"]}
+                          "query": query,
+                          "explicit": song["explicit"]}
+        if run and ('lyrics' not in processed_song["video_title"]):
+            processed_song = {**_search_yt(f"{song['name']} \
+                    {' '.join(song['artists'])}"),
+                              "query": query,
+                              "explicit": song["explicit"]}
+
+        return processed_song
 
 
 def _get_yt_data(video_id):

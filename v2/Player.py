@@ -51,7 +51,7 @@ class Player:
         self.text_channel: Optional[TextChannel] = None
         self.voice_client: Optional[VoiceClient] = discord.utils.get(self.bot.voice_clients, guild=self.guild)
         self.session: Optional[Session] = session_manager.get_or_create_session(self)
-        self.dont_play = False
+        self.dont_play_next = False
 
     def status(self):
         if not self.voice_client:
@@ -63,8 +63,9 @@ class Player:
         else:
             return Status.STOPPED
 
-    def update_player(self, ctx):
-        self.text_channel = ctx.channel
+    def update_player(self, ctx=None):
+        if ctx:
+            self.text_channel = ctx.channel
         self.voice_client = discord.utils.get(self.bot.voice_clients,
                                               guild=self.guild)
         self.current_channel = self.voice_client.channel if self.voice_client else None
@@ -126,9 +127,9 @@ class Player:
 
         return song, session.queue[0] == song
 
-    async def pause_song(self, ctx: SlashContext):
+    async def pause_song(self, ctx: SlashContext = None):
         status = self.status()
-        self.update_player(ctx)
+        self.update_player(ctx if ctx else None)
 
         if status == Status.NOT_CONNECTED:
             raise NotConnectedException(self.bot.user.name)
@@ -164,7 +165,11 @@ class Player:
         self.voice_client.stop()
         return True
 
-    def end_song(self, *args):
+    async def stop_song(self, ctx: SlashContext):
+        await self.skip_song(ctx)
+        self.dont_play_next = True
+
+    def _end_song(self, *args):
         print(args)
         self.bot.dispatch('song_end', self)
 
@@ -172,11 +177,11 @@ class Player:
     @update_player_wrapper
     def run_song(self, song: Song):
         song = get_data(song.query, run=True)
-        self.voice_client.play(FFmpegPCMAudio(song['video_dl_url']), after=self.end_song)
+        self.voice_client.play(FFmpegPCMAudio(song['video_dl_url']), after=self._end_song)
         self.voice_client.source = discord.PCMVolumeTransformer(self.voice_client.source)
         self.voice_client.source.volume = 0.5
 
-    def stop_song(self):
+    def stop_player(self):
         self.voice_client.stop()
 
 

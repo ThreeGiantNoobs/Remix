@@ -34,12 +34,12 @@ class Session:
     class Queue(list):
         def check_zero(self):
             if len(self) == 0:
-                self.session.player.stop_song()
+                self.session.player.stop_player()
                 self.session.previous_song = self.session.current_song
                 self.session.current_song = None
             elif self[0] != self.session.current_song:
                 if self.session.player.status() != 3:
-                    self.session.player.stop_song()
+                    self.session.player.stop_player()
                     self.session.player.run_song(self[0])
                     self.session.previous_song = self.session.current_song
                     self.session.current_song = self[0]

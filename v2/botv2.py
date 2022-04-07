@@ -180,17 +180,46 @@ async def skip(ctx: SlashContext):
             traceback.print_exc()
 
 
+@slash.slash(name="stop", guild_ids=guild_ids,
+             description="Stops the current song")
+async def stop(ctx: SlashContext):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+
+        await ctx.defer()
+        await player.stop_song(ctx)
+
+        embed = Embed(description=f"Stopped Remix")
+        await ctx.reply(embed=embed)
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            traceback.print_exc()
+
+
 @bot.event
 async def on_song_end(player):
     song, played = await player.play_song()
-    if played:
-        embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)
-        embed.set_author(name=player.session.current_song.artist)
-        embed.set_thumbnail(url=player.session.current_song.thumbnail)
-        await player.text_channel.send(embed=embed)
+    if player.dont_play_next:
+        try:
+            await player.pause_song()
+        except NotPlayingException:
+            pass
+        player.dont_play_next = False
     else:
-        embed = Embed(description=f"Queue ended")
-        await player.text_channel.send(embed=embed)
+        if played:
+            embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)
+            embed.set_author(name=player.session.current_song.artist)
+            embed.set_thumbnail(url=player.session.current_song.thumbnail)
+            await player.text_channel.send(embed=embed)
+        else:
+            embed = Embed(description=f"Queue ended")
+            await player.text_channel.send(embed=embed)
 
 if __name__ == '__main__':
     bot.run(os.getenv('DISCORD_TOKEN'))

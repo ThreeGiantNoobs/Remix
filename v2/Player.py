@@ -106,23 +106,13 @@ class Player:
     async def play_song(self, ctx: SlashContext = None, query: str = None):
         status = self.status()
 
-        if not query:
-            if not ctx:
-                session: Session = session_manager.get_or_create_session(self)
-                session.remove_latest()
-                song = session.current_song
+        if not query and not ctx:
+            session: Session = session_manager.get_or_create_session(self)
+            session.remove_latest()
+            song = session.current_song
 
-                if not song:
-                    return None, False
-            else:
-                if status == Status.NOT_CONNECTED:
-                    raise NotConnectedException(self.bot.user.name)
-                if status == Status.PLAYING:
-                    raise AlreadyPlayingException(self.bot.user.name, self.current_channel.name)
-                if status == Status.PAUSED:
-                    self.voice_client.resume()
-                    session: Session = session_manager.get_or_create_session(self)
-                    song = self.session.current_song
+            if not song:
+                return None, False
         else:
             self.update_player(ctx)
             channel: VoiceChannel = ctx.author.voice.channel
@@ -154,6 +144,8 @@ class Player:
 
         if status == Status.NOT_CONNECTED:
             raise NotConnectedException(self.bot.user.name)
+        if status == Status.PLAYING:
+            raise AlreadyPlayingException(self.bot.user.name, self.current_channel.name)
         if status != Status.PAUSED:
             raise NotPausedException(self.bot.user.name)
 

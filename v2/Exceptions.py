@@ -49,3 +49,8 @@ class NotPausedException(Exception):
 class AlreadyStoppedException(Exception):
     def __init__(self, bot):
         self.message = f"{bot} is already stopped"
+
+
+class SongNotFoundException(Exception):
+    def __init__(self, song):
+        self.message = f"Song {song} not found. Try using youtube URL instead."

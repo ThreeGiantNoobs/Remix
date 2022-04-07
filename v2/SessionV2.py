@@ -64,10 +64,10 @@ class Session:
             super(Session.Queue, self).pop(index)
             self.check_zero()
 
-        def __init__(self, session, l=None):
-            if l is None:
-                l = []
-            super(Session.Queue, self).__init__(l)
+        def __init__(self, session, queue=None):
+            if queue is None:
+                queue = []
+            super(Session.Queue, self).__init__(queue)
             self.session = session
 
     def __init__(self, player):

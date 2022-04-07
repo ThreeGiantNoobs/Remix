@@ -93,6 +93,11 @@ async def play(ctx: SlashContext, query: str = None):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
 
         await ctx.defer()
+
+        if not query:
+            await resume(ctx)
+            return
+
         song, played = await player.play_song(ctx, query)
         if played:
             embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)

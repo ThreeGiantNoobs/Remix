@@ -202,6 +202,61 @@ async def stop(ctx: SlashContext):
             traceback.print_exc()
 
 
+@slash.slash(name="queue", guild_ids=guild_ids,
+             description="Shows the current queue")
+async def queue(ctx: SlashContext):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+
+        await ctx.defer()
+        queue = player.session.queue
+        if not queue:
+            embed = Embed(description="Queue is empty")
+            await ctx.reply(embed=embed)
+            return
+
+        embed = Embed(description="Queue")
+        for i, song in enumerate(queue):
+            embed.add_field(name=f'{i+1}. {song.title}', value=song.artist)
+        await ctx.reply(embed=embed)
+
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            traceback.print_exc()
+
+
+@slash.slash(name="current", guild_ids=guild_ids,
+             description="Shows the current song")
+async def current(ctx: SlashContext):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+
+        await ctx.defer()
+        if player.session.current_song:
+            embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)
+            embed.set_author(name=player.session.current_song.artist)
+            embed.set_thumbnail(url=player.session.current_song.thumbnail)
+            await ctx.reply(embed=embed)
+        else:
+            embed = discord.Embed(description="No song is playing")
+            await ctx.reply(embed=embed)
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            traceback.print_exc()
+
+
 @bot.event
 async def on_song_end(player):
     song, played = await player.play_song()

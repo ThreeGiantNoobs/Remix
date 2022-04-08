@@ -176,12 +176,9 @@ class Player:
         session: Session = session_manager.get_or_create_session(self)
 
         if loop_type == -1:
-            if session.loop != LoopType.NONE:
-                session.loop = LoopType.NONE
-            else:
-                session.loop = LoopType.QUEUE
+            session.loop = LoopType.QUEUE if session.loop == LoopType.NONE else LoopType.NONE
         else:
-            session.loop = loop_type
+            session.loop = LoopType(loop_type)
         return True
 
     async def stop_song(self, ctx: SlashContext):

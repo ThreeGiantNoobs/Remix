@@ -12,6 +12,7 @@ from discord_slash.utils.manage_commands import create_option, create_choice
 
 from Exceptions import *
 from Player import PlayerManager
+from SessionV2 import LoopType
 
 dotenv.load_dotenv()
 
@@ -270,7 +271,7 @@ async def shuffle(ctx: SlashContext):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
 
         await ctx.defer()
-        await player.toggle_shuffle(ctx)
+        player.toggle_shuffle(ctx)
 
         if player.session.shuffle:
             embed = Embed(description="Shuffle enabled")
@@ -309,15 +310,16 @@ async def loop(ctx: SlashContext, loop_type: int = -1):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
 
         await ctx.defer()
-        await player.set_loop(ctx, loop_type)
+        player.set_loop(ctx, loop_type)
 
-        if player.session.loop == 0:
+        if player.session.loop == LoopType.NONE:
             embed = Embed(description="Loop disabled")
-        elif player.session.loop == 1:
+        elif player.session.loop == LoopType.SONG:
             embed = Embed(description="Looping current song")
-        elif player.session.loop == 2:
+        elif player.session.loop == LoopType.QUEUE:
             embed = Embed(description="Looping queue")
         else:
+            print(player.session.loop)
             embed = Embed(description="Bro how tf?!")
         await ctx.reply(embed=embed)
     except Exception as e:

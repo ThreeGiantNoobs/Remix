@@ -40,7 +40,7 @@ class Song:
         return {
             "query": self.query,
             "title": self.title,
-            "id": self.id,
+            "vid_id": self.id,
             "dl_url": self.dl_url,
             "video_url": self.video_url,
             "thumbnail": self.thumbnail,
@@ -80,8 +80,9 @@ class Session:
             self.check_zero()
 
         def pop(self, index=-1):
-            super(Session.Queue, self).pop(index)
+            val = super(Session.Queue, self).pop(index)
             self.check_zero()
+            return val
 
         def __init__(self, session, queue=None):
             if queue is None:
@@ -119,11 +120,11 @@ class Session:
         if self.loop == LoopType.QUEUE:
             song: Song = Song(**self.queue[0].get_attrs())
             self.queue.append(song)
-            return self.queue.pop(0)
         elif self.loop == LoopType.SONG:
             song: Song = Song(**self.queue[0].get_attrs())
             self.queue.insert(1, song)
-            return self.queue.pop(0)
+
+        return self.queue.pop(0)
 
     def next_song(self):
         if self.queue:

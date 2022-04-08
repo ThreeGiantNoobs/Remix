@@ -288,7 +288,7 @@ async def shuffle(ctx: SlashContext):
 @slash.slash(name="loop", guild_ids=guild_ids,
              options=[
                  create_option(
-                     name="type",
+                     name="loop_type",
                      description="Loop type",
                      option_type=SlashCommandOptionType.INTEGER,
                      required=False,

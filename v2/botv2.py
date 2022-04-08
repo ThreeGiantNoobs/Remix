@@ -309,7 +309,7 @@ async def loop(ctx: SlashContext, loop_type: int = -1):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
 
         await ctx.defer()
-        await player.set_loop(ctx, loop_type)
+        player.set_loop(ctx, loop_type)
 
         if player.session.loop == 0:
             embed = Embed(description="Loop disabled")

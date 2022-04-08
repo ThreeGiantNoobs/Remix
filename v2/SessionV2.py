@@ -1,5 +1,6 @@
 from typing import Optional
 from enum import Enum
+import random
 
 from Exceptions import *
 from dataFuncV2 import *
@@ -8,6 +9,12 @@ from dataFuncV2 import *
 class Actions(Enum):
     ERROR = 0
     PLAY = 1
+    QUEUE = 2
+
+
+class LoopType(Enum):
+    NONE = 0
+    SONG = 1
     QUEUE = 2
 
 
@@ -28,6 +35,18 @@ class Song:
         self.thumbnail = thumbnail
         self.artist = artist
         self.explicit = explicit
+
+    def get_attrs(self):
+        return {
+            "query": self.query,
+            "title": self.title,
+            "id": self.id,
+            "dl_url": self.dl_url,
+            "video_url": self.video_url,
+            "thumbnail": self.thumbnail,
+            "artist": self.artist,
+            "explicit": self.explicit
+        }
 
 
 class Session:
@@ -75,6 +94,8 @@ class Session:
         self.queue: Session.Queue[Song] = Session.Queue(self)
         self.current_song: Optional[Song] = None
         self.previous_song: Optional[Song] = None
+        self.shuffle = False
+        self.loop = LoopType.NONE
 
     def _get_song(self, query: str):
         song = get_data(query)
@@ -94,8 +115,25 @@ class Session:
         self.queue.append(song)
         return song
 
-    def remove_latest(self):
-        return self.queue.pop(0)
+    def _next_song_action(self):
+        if self.loop == LoopType.QUEUE:
+            song: Song = Song(**self.queue[0].get_attrs())
+            self.queue.append(song)
+            return self.queue.pop(0)
+        elif self.loop == LoopType.SONG:
+            song: Song = Song(**self.queue[0].get_attrs())
+            self.queue.insert(1, song)
+            return self.queue.pop(0)
+
+    def next_song(self):
+        if self.queue:
+            if self.shuffle and not self.loop == LoopType.SONG:
+                self.queue.insert(1, self.queue.pop(random.randint(1, len(self.queue) - 1)))
+                return self._next_song_action()
+            else:
+                return self._next_song_action()
+        else:
+            raise EmptyQueueError
 
 
 class SessionManager:

@@ -9,7 +9,7 @@ from discord_slash import SlashContext
 from tenacity import retry, stop_after_attempt
 
 from Exceptions import *
-from SessionV2 import Session, SessionManager, Song
+from SessionV2 import Session, SessionManager, Song, LoopType
 from dataFuncV2 import get_data
 
 session_manager: SessionManager = SessionManager()
@@ -109,7 +109,7 @@ class Player:
 
         if not query and not ctx:
             session: Session = session_manager.get_or_create_session(self)
-            session.remove_latest()
+            session.next_song()
             song = session.current_song
 
             if not song:
@@ -163,6 +163,25 @@ class Player:
             raise AlreadyStoppedException(self.bot.user.name)
 
         self.voice_client.stop()
+        return True
+
+    def toggle_shuffle(self, ctx: SlashContext):
+        self.update_player(ctx)
+        session: Session = session_manager.get_or_create_session(self)
+        session.shuffle = not session.shuffle
+        return True
+
+    def set_loop(self, ctx: SlashContext, loop_type):
+        self.update_player(ctx)
+        session: Session = session_manager.get_or_create_session(self)
+
+        if loop_type == -1:
+            if session.loop != LoopType.NONE:
+                session.loop = LoopType.NONE
+            else:
+                session.loop = LoopType.QUEUE
+        else:
+            session.loop = loop_type
         return True
 
     async def stop_song(self, ctx: SlashContext):

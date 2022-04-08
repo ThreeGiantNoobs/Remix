@@ -54,3 +54,8 @@ class AlreadyStoppedException(Exception):
 class SongNotFoundException(Exception):
     def __init__(self, song):
         self.message = f"Song {song} not found. Try using youtube URL instead."
+
+
+class EmptyQueueError(Exception):
+    def __init__(self):
+        self.message = "Queue is empty"

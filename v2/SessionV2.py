@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
 import random
 
@@ -54,13 +54,13 @@ class Session:
         def check_zero(self):
             if len(self) == 0:
                 self.session.player.stop_player()
-                self.session.previous_song = self.session.current_song
+                self.session.history.append(self.session.current_song)
                 self.session.current_song = None
             elif self[0] != self.session.current_song:
                 if self.session.player.status() != 3:
                     self.session.player.stop_player()
                     self.session.player.run_song(self[0])
-                    self.session.previous_song = self.session.current_song
+                    self.session.history.append(self.session.current_song)
                     self.session.current_song = self[0]
 
         def __setitem__(self, key, value):
@@ -94,7 +94,7 @@ class Session:
         self.player = player
         self.queue: Session.Queue[Song] = Session.Queue(self)
         self.current_song: Optional[Song] = None
-        self.previous_song: Optional[Song] = None
+        self.history: Optional[List[Song]] = []
         self.shuffle = False
         self.loop = LoopType.NONE
 

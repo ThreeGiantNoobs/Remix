@@ -1,4 +1,3 @@
-import enum
 import json
 import os
 import traceback
@@ -115,6 +114,8 @@ async def play(ctx: SlashContext, query: str = None):
             await ctx.reply(e.message)
         except AttributeError:
             traceback.print_exc()
+            embed = Embed(description=f"Something went wrong")
+            await ctx.reply(embed=embed)
 
 
 @slash.slash(name="pause", guild_ids=guild_ids,
@@ -203,6 +204,8 @@ async def stop(ctx: SlashContext):
             await ctx.reply(e.message)
         except AttributeError:
             traceback.print_exc()
+            embed = Embed(description=f"Something went wrong")
+            await ctx.reply(embed=embed)
 
 
 @slash.slash(name="queue", guild_ids=guild_ids,
@@ -232,6 +235,8 @@ async def queue(ctx: SlashContext):
             await ctx.reply(e.message)
         except AttributeError:
             traceback.print_exc()
+            embed = Embed(description=f"Something went wrong")
+            await ctx.reply(embed=embed)
 
 
 @slash.slash(name="current", guild_ids=guild_ids,
@@ -258,6 +263,36 @@ async def current(ctx: SlashContext):
             await ctx.reply(e.message)
         except AttributeError:
             traceback.print_exc()
+            embed = Embed(description=f"Something went wrong")
+            await ctx.reply(embed=embed)
+
+
+@slash.slash(name="volume", guild_ids=guild_ids,
+             description="Sets the volume (default: 50)",
+             options=[create_option(name="vol",
+                                    description="Volume (0-100)",
+                                    option_type=SlashCommandOptionType.INTEGER,
+                                    required=True)])
+async def volume(ctx: SlashContext, vol: int):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+
+        await ctx.defer()
+        player.set_volume(ctx, vol)
+        embed = Embed(description=f"Volume set to {vol}")
+        await ctx.reply(embed=embed)
+
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            traceback.print_exc()
+            embed = Embed(description=f"Something went wrong")
+            await ctx.reply(embed=embed)
 
 
 @slash.slash(name="shuffle", guild_ids=guild_ids,
@@ -284,6 +319,8 @@ async def shuffle(ctx: SlashContext):
             await ctx.reply(e.message)
         except AttributeError:
             traceback.print_exc()
+            embed = Embed(description=f"Something went wrong")
+            await ctx.reply(embed=embed)
 
 
 @slash.slash(name="loop", guild_ids=guild_ids,
@@ -327,6 +364,8 @@ async def loop(ctx: SlashContext, loop_type: int = -1):
             await ctx.reply(e.message)
         except AttributeError:
             traceback.print_exc()
+            embed = Embed(description=f"Something went wrong")
+            await ctx.reply(embed=embed)
 
 
 @bot.event

@@ -197,6 +197,14 @@ class Player:
         self.voice_client.source = discord.PCMVolumeTransformer(self.voice_client.source)
         self.voice_client.source.volume = 0.5
 
+    def set_volume(self, ctx: SlashContext, volume: int):
+        if volume < 0 or volume > 100:
+            raise VolumeOutOfBoundsException(volume)
+
+        self.update_player(ctx)
+        self.voice_client.source.volume = volume/100
+        return True
+
     def stop_player(self):
         self.voice_client.stop()
 

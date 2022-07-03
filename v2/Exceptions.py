@@ -59,3 +59,8 @@ class SongNotFoundException(Exception):
 class EmptyQueueError(Exception):
     def __init__(self):
         self.message = "Queue is empty"
+
+
+class VolumeOutOfBoundsException(Exception):
+    def __init__(self, volume):
+        self.message = f"Volume {volume} can't be set. It must be between 0 and 100"

@@ -96,7 +96,7 @@ async def play(ctx: SlashContext, query: str = None):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
 
         if not query:
-            await resume(ctx)
+            await ctx.invoke(resume)
             return
 
         await ctx.defer()

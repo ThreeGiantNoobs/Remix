@@ -208,7 +208,7 @@ class Player:
 
     def get_volume(self, ctx: SlashContext):
         self.update_player(ctx)
-        return self.session.volume*100
+        return int(self.session.volume*100)
 
     def stop_player(self):
         self.voice_client.stop()

@@ -6,6 +6,8 @@ import requests
 import youtube_dl
 from spotify_api import get_song_spotify
 
+from Exceptions import UnsupportedUrlException
+
 dotenv.load_dotenv()
 
 GENIUS_API_KEY = os.getenv("GENIUS_TOKEN")
@@ -57,8 +59,8 @@ def get_data(query, run=False):
         return {**_get_yt_data(processed_query),
                 "query": query,
                 "explicit": False}
-    elif q_type == "text":
-        song = get_song_spotify(processed_query)
+    elif q_type == "text" or q_type == "spotify":
+        song = get_song_spotify(q_type, processed_query)
 
         processed_song = {**_search_yt(f"{song['name']} \
         {' '.join(song['artists'])} \
@@ -72,6 +74,8 @@ def get_data(query, run=False):
                               "explicit": song["explicit"]}
 
         return processed_song
+    else:
+        raise UnsupportedUrlException(q_type)
 
 
 def _get_yt_data(video_id):

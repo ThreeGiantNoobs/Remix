@@ -64,3 +64,8 @@ class EmptyQueueError(Exception):
 class VolumeOutOfBoundsException(Exception):
     def __init__(self, volume):
         self.message = f"Volume {volume} can't be set. It must be between 0 and 100"
+
+
+class UnsupportedUrlException(Exception):
+    def __init__(self, type):
+        self.message = f"{type} links are not supported"

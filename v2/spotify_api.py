@@ -57,35 +57,56 @@ def _get_api_token():
     return api_token
 
 
-def get_song_spotify(query):
+def get_song_spotify(q_type, query):
+    song = None
+
     api_token = _get_api_token()
     headers = {
         'Authorization': f'Bearer {api_token}',
         'Content-Type': 'application/json'
     }
-    args = {
-        'q': query,
-        'type': 'track',
-        'limit': 1
-    }
 
-    response = requests.get(f'https://api.spotify.com/v1/search?', params=args, headers=headers)
-    response_json = response.json()
+    if q_type == "text":
+        args = {
+            'q': query,
+            'type': 'track',
+            'limit': 1
+        }
 
-    song = response_json['tracks']['items']
-    if len(song) == 0:
-        raise SongNotFoundException(query)
-    song = song[0]
+        response = requests.get(f'https://api.spotify.com/v1/search?', params=args, headers=headers)
+        response_json = response.json()
 
-    song = Spotify_Song(
-        name=song['name'],
-        artists=[artist['name'] for artist in song['artists']],
-        explicit=song['explicit']
-    )
+        song = response_json['tracks']['items']
+        if len(song) == 0:
+            raise SongNotFoundException(query)
+        song = song[0]
+
+        song = Spotify_Song(
+            name=song['name'],
+            artists=[artist['name'] for artist in song['artists']],
+            explicit=song['explicit']
+        )
+
+    elif q_type == "spotify":
+        song_id = query
+
+        response = requests.get(f'https://api.spotify.com/v1/tracks/{song_id}', headers=headers)
+
+        try:
+            song = response.json()
+        except json.decoder.JSONDecodeError:
+            raise SongNotFoundException(query)
+
+        song = Spotify_Song(
+            name=song['name'],
+            artists=[artist['name'] for artist in song['artists']],
+            explicit=song['explicit']
+        )
 
     return song
 
 
 if __name__ == '__main__':
-    song = get_song_spotify("Bang Bang Adam Levine")
+    # song = get_song_spotify("text", "Bang Bang Adam Levine")
+    song = get_song_spotify("spotify", "55p8TQ1ggGYOO1gLQrC52D?si=ec9f6dbc371944d8")
     print(song)

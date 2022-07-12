@@ -95,11 +95,11 @@ async def play(ctx: SlashContext, query: str = None):
 
         player = player_manager.get_or_create_player(voice.channel.guild.id)
 
-        await ctx.defer()
-
         if not query:
             await resume(ctx)
             return
+
+        await ctx.defer()
 
         song, played = await player.play_song(ctx, query)
         if played:

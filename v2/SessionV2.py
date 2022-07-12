@@ -97,6 +97,7 @@ class Session:
         self.history: Optional[List[Song]] = []
         self.shuffle = False
         self.loop = LoopType.NONE
+        self.volume = 0.5
 
     def _get_song(self, query: str):
         song = get_data(query)

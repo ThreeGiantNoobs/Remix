@@ -195,7 +195,7 @@ class Player:
         song = get_data(song.query, run=True)
         self.voice_client.play(FFmpegPCMAudio(song['video_dl_url']), after=self._end_song)
         self.voice_client.source = discord.PCMVolumeTransformer(self.voice_client.source)
-        self.voice_client.source.volume = 0.5
+        self.voice_client.source.volume = self.session.volume
 
     def set_volume(self, ctx: SlashContext, volume: int):
         if volume < 0 or volume > 100:
@@ -203,7 +203,12 @@ class Player:
 
         self.update_player(ctx)
         self.voice_client.source.volume = volume/100
+        self.session.volume = volume/100
         return True
+
+    def get_volume(self, ctx: SlashContext):
+        self.update_player(ctx)
+        return self.session.volume*100
 
     def stop_player(self):
         self.voice_client.stop()

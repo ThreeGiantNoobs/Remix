@@ -1,6 +1,7 @@
 import json
 import os
 import traceback
+import typing
 
 import discord
 import dotenv
@@ -272,8 +273,8 @@ async def current(ctx: SlashContext):
              options=[create_option(name="vol",
                                     description="Volume (0-100)",
                                     option_type=SlashCommandOptionType.INTEGER,
-                                    required=True)])
-async def volume(ctx: SlashContext, vol: int):
+                                    required=False)])
+async def volume(ctx: SlashContext, vol: typing.Union[int, None] = None):
     try:
         voice: VoiceClient = ctx.author.voice
         if not voice:
@@ -282,9 +283,15 @@ async def volume(ctx: SlashContext, vol: int):
         player = player_manager.get_or_create_player(voice.channel.guild.id)
 
         await ctx.defer()
-        player.set_volume(ctx, vol)
-        embed = Embed(description=f"Volume set to {vol}")
-        await ctx.reply(embed=embed)
+
+        if vol is None:
+            vol = player.get_volume(ctx)
+            embed = Embed(description=f"Volume: {vol}")
+            await ctx.reply(embed=embed)
+        else:
+            player.set_volume(ctx, vol)
+            embed = Embed(description=f"Volume set to {vol}")
+            await ctx.reply(embed=embed)
 
     except Exception as e:
         try:

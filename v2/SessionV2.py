@@ -20,21 +20,25 @@ class LoopType(Enum):
 
 class Song:
     def __init__(self, query: str,
+                 name: str,
                  title: str,
                  vid_id: str,
                  dl_url: str,
                  video_url: str,
                  thumbnail: str,
-                 artist: str,
-                 explicit: bool):
+                 channel: str,
+                 explicit: bool,
+                 lyrics: str):
         self.query = query
+        self.name = name
         self.title = title
         self.id = vid_id
         self.dl_url = dl_url
         self.video_url = video_url
         self.thumbnail = thumbnail
-        self.artist = artist
+        self.channel = channel
         self.explicit = explicit
+        self.lyrics = lyrics
 
     def get_attrs(self):
         return {
@@ -44,8 +48,9 @@ class Song:
             "dl_url": self.dl_url,
             "video_url": self.video_url,
             "thumbnail": self.thumbnail,
-            "artist": self.artist,
-            "explicit": self.explicit
+            "channel": self.channel,
+            "explicit": self.explicit,
+            "lyrics": self.lyrics
         }
 
 
@@ -102,13 +107,15 @@ class Session:
     def _get_song(self, query: str):
         song = get_data(query)
         song = Song(query=song['query'],
+                    name=song['name'],
                     title=song['video_title'],
                     vid_id=song['video_id'],
                     dl_url=song['video_dl_url'],
                     video_url=song['video_url'],
                     thumbnail=song['thumbnail_url'],
-                    artist=song['artist'],
-                    explicit=song['explicit'])
+                    channel=song['channel'],
+                    explicit=song['explicit'],
+                    lyrics=song['lyrics'])
 
         return song
 

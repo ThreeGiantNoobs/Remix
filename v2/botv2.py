@@ -104,7 +104,7 @@ async def play(ctx: SlashContext, query: str = None):
         song, played = await player.play_song(ctx, query)
         if played:
             embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)
-            embed.set_author(name=player.session.current_song.artist)
+            embed.set_author(name=player.session.current_song.channel)
             embed.set_thumbnail(url=player.session.current_song.thumbnail)
             await ctx.reply(embed=embed)
         else:
@@ -228,7 +228,7 @@ async def queue(ctx: SlashContext):
 
         embed = Embed(description="Queue")
         for i, song in enumerate(queue):
-            embed.add_field(name=f'{i + 1}. {song.title}', value=song.artist)
+            embed.add_field(name=f'{i + 1}. {song.title}', value=song.channel)
         await ctx.reply(embed=embed)
 
     except Exception as e:
@@ -253,7 +253,7 @@ async def current(ctx: SlashContext):
         await ctx.defer()
         if player.session.current_song:
             embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)
-            embed.set_author(name=player.session.current_song.artist)
+            embed.set_author(name=player.session.current_song.channel)
             embed.set_thumbnail(url=player.session.current_song.thumbnail)
             await ctx.reply(embed=embed)
         else:
@@ -375,6 +375,28 @@ async def loop(ctx: SlashContext, loop_type: int = -1):
             await ctx.reply(embed=embed)
 
 
+@slash.slash(name="lyrics", guild_ids=guild_ids,
+             description="Shows the lyrics for the current song")
+async def lyrics(ctx: SlashContext):
+    try:
+        voice: VoiceClient = ctx.author.voice
+        if not voice:
+            raise AuthorVoiceException(ctx.author.mention)
+
+        player = player_manager.get_or_create_player(voice.channel.guild.id)
+
+        await ctx.defer()
+        embed = Embed(description=player.get_lyrics(ctx))
+        await ctx.reply(embed=embed)
+    except Exception as e:
+        try:
+            await ctx.reply(e.message)
+        except AttributeError:
+            traceback.print_exc()
+            embed = Embed(description=f"Something went wrong")
+            await ctx.reply(embed=embed)
+
+
 @bot.event
 async def on_song_end(player):
     song, played = await player.play_song()
@@ -387,7 +409,7 @@ async def on_song_end(player):
     else:
         if played:
             embed = discord.Embed(title=player.session.current_song.title, url=player.session.current_song.video_url)
-            embed.set_author(name=player.session.current_song.artist)
+            embed.set_author(name=player.session.current_song.channel)
             embed.set_thumbnail(url=player.session.current_song.thumbnail)
             await player.text_channel.send(embed=embed)
         else:

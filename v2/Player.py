@@ -189,6 +189,15 @@ class Player:
         print(args)
         self.bot.dispatch('song_end', self)
 
+    def get_lyrics(self, ctx: SlashContext):
+        self.update_player(ctx)
+        session: Session = session_manager.get_or_create_session(self)
+
+        if not session.current_song:
+            raise NotPlayingException(self.bot.user.name)
+        else:
+            return session.current_song.lyrics
+
     @retry(stop=stop_after_attempt(3))
     @update_player_wrapper
     def run_song(self, song: Song):

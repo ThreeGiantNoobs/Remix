@@ -3,7 +3,7 @@ import lyricsgenius as lg
 import os
 import re
 import requests
-import youtube_dl
+import yt_dlp
 from spotify_api import get_song_spotify
 
 from Exceptions import UnsupportedUrlException
@@ -86,7 +86,7 @@ def get_data(query, run=False):
 def _get_yt_data(video_id):
     base_url = "https://www.youtube.com/watch?v="
     url = base_url + video_id
-    with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+    with yt_dlp.YoutubeDL(YDL_OPTIONS) as ydl:
         info_dict = ydl.extract_info(url, download=False)
 
     return parse_video(info_dict)
@@ -113,7 +113,7 @@ def textyl_lyrics(song, artist=None):
 
 
 def _search_yt(query):
-    with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+    with yt_dlp.YoutubeDL(YDL_OPTIONS) as ydl:
         info_dict = ydl.extract_info(f"ytsearch: {query}", download=False)["entries"][0]
 
     return parse_video(info_dict)
